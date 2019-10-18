@@ -216,7 +216,7 @@ jobject mat_to_bitmap(JNIEnv * env, Mat & src, bool needPremultiplyAlpha, jobjec
     }
 }
 
-JNIEXPORT jobject JNICALL Java_com_scanlibrary_ScanActivity_getScannedBitmap
+JNIEXPORT jobject JNICALL Java_com_areaseys_pdfscanner_pdfscanner_ScanActivity_getScannedBitmap
 (JNIEnv *env, jobject thiz, jobject bitmap,jfloat x1,jfloat y1,jfloat x2, jfloat y2, jfloat x3,jfloat y3,jfloat x4,jfloat y4)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "Scaning getString");
@@ -252,7 +252,7 @@ JNIEXPORT jobject JNICALL Java_com_scanlibrary_ScanActivity_getScannedBitmap
     return _bitmap;
 }
 
-JNIEXPORT jobject JNICALL Java_com_scanlibrary_ScanActivity_getMagicColorBitmap
+JNIEXPORT jobject JNICALL Java_com_areaseys_pdfscanner_pdfscanner_ScanActivity_getMagicColorBitmap
 (JNIEnv *env, jobject thiz,jobject bitmap)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "Scaning getMagicColorBitmap");
@@ -292,7 +292,7 @@ JNIEXPORT jobject JNICALL Java_com_scanlibrary_ScanActivity_getMagicColorBitmap
 
 }
 
-JNIEXPORT jobject JNICALL Java_com_scanlibrary_ScanActivity_getBWBitmap
+JNIEXPORT jobject JNICALL Java_com_areaseys_pdfscanner_pdfscanner_ScanActivity_getBWBitmap
 (JNIEnv *env, jobject thiz,jobject bitmap)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "Scaning getBWBitmap");
@@ -337,7 +337,7 @@ JNIEXPORT jobject JNICALL Java_com_scanlibrary_ScanActivity_getBWBitmap
 
 }
 
-JNIEXPORT jobject JNICALL Java_com_scanlibrary_ScanActivity_getGrayBitmap
+JNIEXPORT jobject JNICALL Java_com_areaseys_pdfscanner_pdfscanner_ScanActivity_getGrayBitmap
 (JNIEnv *env, jobject thiz,jobject bitmap)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "Scaning getGrayBitmap");
@@ -375,7 +375,7 @@ JNIEXPORT jobject JNICALL Java_com_scanlibrary_ScanActivity_getGrayBitmap
     return _bitmap;
 }
 
-JNIEXPORT jfloatArray JNICALL Java_com_scanlibrary_ScanActivity_getPoints
+JNIEXPORT jfloatArray JNICALL Java_com_areaseys_pdfscanner_pdfscanner_ScanActivity_getPoints
 (JNIEnv *env, jobject thiz,jobject bitmap)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "Scaning getPoints");

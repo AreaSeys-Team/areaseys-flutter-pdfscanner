@@ -1,5 +1,7 @@
 package com.areaseys.pdfscanner.pdfscanner
 
+import android.content.Context
+import android.content.Intent
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -9,10 +11,13 @@ import io.flutter.plugin.common.PluginRegistry.Registrar
 class PdfscannerPlugin : MethodCallHandler {
 
   companion object {
+    private lateinit var context: Context
+
     @JvmStatic
     fun registerWith(registrar: Registrar) {
       val channel = MethodChannel(registrar.messenger(), "pdfscanner")
       channel.setMethodCallHandler(PdfscannerPlugin())
+      context = registrar.context()
     }
   }
 
@@ -28,8 +33,9 @@ class PdfscannerPlugin : MethodCallHandler {
 
     //Try load native libraries
     try {
-      System.loadLibrary("opencv_java3")
-      System.loadLibrary("Scanner")
+      val intent = Intent(context, ScanActivity::class.java)
+      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      context.startActivity(intent)
     } catch (ex: Exception) {
       result.success(ex.message)
     }

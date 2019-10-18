@@ -62,20 +62,20 @@ extern "C" {
  * Method:    getScannedBitmap
  * Signature: (IILandroid/graphics/Bitmap;FFFFFFFF)Landroid/graphics/Bitmap;
  */
-JNIEXPORT jobject JNICALL Java_com_scanlibrary_ScanActivity_getScannedBitmap
+JNIEXPORT jobject JNICALL Java_com_areaseys_pdfscanner_pdfscanner_ScanActivity_getScannedBitmap
   (JNIEnv *, jobject, jobject, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat);
 
 
-JNIEXPORT jfloatArray JNICALL Java_com_scanlibrary_ScanActivity_getPoints
+JNIEXPORT jfloatArray JNICALL Java_com_areaseys_pdfscanner_pdfscanner_ScanActivity_getPoints
 (JNIEnv *, jobject, jobject);
 
-JNIEXPORT jobject JNICALL Java_com_scanlibrary_ScanActivity_getBWBitmap
+JNIEXPORT jobject JNICALL Java_com_areaseys_pdfscanner_pdfscanner_ScanActivity_getBWBitmap
 (JNIEnv *, jobject, jobject);
 
-JNIEXPORT jobject JNICALL Java_com_scanlibrary_ScanActivity_getMagicColorBitmap
+JNIEXPORT jobject JNICALL Java_com_areaseys_pdfscanner_pdfscanner_ScanActivity_getMagicColorBitmap
 (JNIEnv *, jobject, jobject);
 
-JNIEXPORT jobject JNICALL Java_com_scanlibrary_ScanActivity_getGrayBitmap
+JNIEXPORT jobject JNICALL Java_com_areaseys_pdfscanner_pdfscanner_ScanActivity_getGrayBitmap
 (JNIEnv *, jobject, jobject);
 
 
