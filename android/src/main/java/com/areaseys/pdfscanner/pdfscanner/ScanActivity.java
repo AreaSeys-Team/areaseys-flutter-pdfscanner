@@ -8,11 +8,11 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 /**
  * Created by jhansi on 28/03/15.
@@ -39,9 +39,6 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        for (int permision : grantResults) {
-            Log.i("PERMISION:", String.valueOf(permision));
-        }
         if (requestCode == REQUEST_PERMISSIONS_CODE) {
             if (
                     grantResults.length > 0 &&

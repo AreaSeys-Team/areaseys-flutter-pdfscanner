@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +20,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import androidx.core.content.FileProvider;
 
 /**
  * Created by jhansi on 04/04/15.
@@ -56,7 +57,8 @@ public class PickImageFragment extends Fragment {
         galleryButton.setOnClickListener(new GalleryClickListener());
         if (true) {
             handleIntentPreference();
-        } else {
+        }
+        else {
             getActivity().finish();
         }
     }
@@ -66,7 +68,8 @@ public class PickImageFragment extends Fragment {
             File tempFolder = new File(ScanConstants.IMAGE_PATH);
             for (File f : tempFolder.listFiles())
                 f.delete();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -75,7 +78,8 @@ public class PickImageFragment extends Fragment {
         int preference = getIntentPreference();
         if (preference == ScanConstants.OPEN_CAMERA) {
             openCamera();
-        } else if (preference == ScanConstants.OPEN_MEDIA) {
+        }
+        else if (preference == ScanConstants.OPEN_MEDIA) {
             openMediaContent();
         }
     }
@@ -89,7 +93,6 @@ public class PickImageFragment extends Fragment {
         int preference = getArguments().getInt(ScanConstants.OPEN_INTENT_PREFERENCE, 0);
         return preference;
     }
-
 
     private class CameraButtonClickListener implements View.OnClickListener {
         @Override
@@ -118,11 +121,10 @@ public class PickImageFragment extends Fragment {
         boolean isDirectoryCreated = file.getParentFile().mkdirs();
         Log.d("", "openCamera: isDirectoryCreated: " + isDirectoryCreated);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Uri tempFileUri = FileProvider.getUriForFile(getActivity().getApplicationContext(),
-                    "com.scanlibrary.provider", // As defined in Manifest
-                    file);
+            Uri tempFileUri = FileProvider.getUriForFile(getActivity().getApplicationContext(), "com.scanlibrary.provider", file);
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempFileUri);
-        } else {
+        }
+        else {
             Uri tempFileUri = Uri.fromFile(file);
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempFileUri);
         }
@@ -132,9 +134,9 @@ public class PickImageFragment extends Fragment {
     private File createImageFile() {
         clearTempImages();
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new
-                Date());
+                                                                                  Date());
         File file = new File(ScanConstants.IMAGE_PATH, "IMG_" + timeStamp +
-                ".jpg");
+                                                       ".jpg");
         fileUri = Uri.fromFile(file);
         return file;
     }
@@ -154,10 +156,12 @@ public class PickImageFragment extends Fragment {
                         bitmap = getBitmap(data.getData());
                         break;
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 e.printStackTrace();
             }
-        } else {
+        }
+        else {
             getActivity().finish();
         }
         if (bitmap != null) {

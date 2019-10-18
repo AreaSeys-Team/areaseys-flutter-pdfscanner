@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="00287dd7-7149-4139-a3f7-81245be11748" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/android/src/main/java/com/areaseys/pdfscanner/pdfscanner/ScanActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/java/com/areaseys/pdfscanner/pdfscanner/ScanActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/src/main/kotlin/com/areaseys/pdfscanner/pdfscanner/PdfscannerPlugin.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/kotlin/com/areaseys/pdfscanner/pdfscanner/PdfscannerPlugin.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/pdfscanner.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pdfscanner.dart" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
