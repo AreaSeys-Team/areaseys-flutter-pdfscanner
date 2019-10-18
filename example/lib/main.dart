@@ -38,7 +38,15 @@ class _MyAppState extends State<MyApp> {
               height: 50,
             ),
             MaterialButton(
-              onPressed: () => Pdfscanner.scan().then((String path) => setState(() => _path = path)),
+              onPressed: () => Pdfscanner.scan().then((String path) => setState(() => _path = path)).catchError(
+                    (error) => showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text("Error!"),
+                        content: Text(error),
+                      ),
+                    ),
+                  ),
               child: Text("Scan"),
               color: Colors.blue,
               textColor: Colors.white,

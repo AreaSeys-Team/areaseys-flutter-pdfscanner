@@ -11,6 +11,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar
 class PdfscannerPlugin : MethodCallHandler {
 
   companion object {
+
     private lateinit var context: Context
 
     @JvmStatic
@@ -19,6 +20,8 @@ class PdfscannerPlugin : MethodCallHandler {
       channel.setMethodCallHandler(PdfscannerPlugin())
       context = registrar.context()
     }
+
+    lateinit var result: Result
   }
 
   override fun onMethodCall(call: MethodCall, result: Result) {
@@ -28,9 +31,8 @@ class PdfscannerPlugin : MethodCallHandler {
     }
   }
 
-
   private fun scan(result: Result) {
-
+    PdfscannerPlugin.result = result
     //Try load native libraries
     try {
       val intent = Intent(context, ScanActivity::class.java)
@@ -39,6 +41,7 @@ class PdfscannerPlugin : MethodCallHandler {
     } catch (ex: Exception) {
       result.success(ex.message)
     }
-    result.success("Libraries loaded :)")
   }
+
+
 }
