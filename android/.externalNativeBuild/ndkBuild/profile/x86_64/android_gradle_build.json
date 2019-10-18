@@ -1,0 +1,33 @@
+{
+  "buildFiles": [
+    "/Users/mrmar/Development/Flutter/areaseys-flutter-pdfscanner/android/src/main/jni/Android.mk",
+    "/Users/mrmar/Development/Flutter/areaseys-flutter-pdfscanner/android/src/main/jni/Application.mk"
+  ],
+  "cleanCommands": [
+    "/Users/mrmar/Library/Android/sdk/ndk/20.0.5594570/ndk-build NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003d/Users/mrmar/Development/Flutter/areaseys-flutter-pdfscanner/android/src/main/jni/Android.mk NDK_APPLICATION_MK\u003d/Users/mrmar/Development/Flutter/areaseys-flutter-pdfscanner/android/src/main/jni/Application.mk APP_ABI\u003dx86_64 NDK_ALL_ABIS\u003dx86_64 NDK_DEBUG\u003d1 APP_PLATFORM\u003dandroid-16 NDK_OUT\u003d/Users/mrmar/Development/Flutter/areaseys-flutter-pdfscanner/example/build/pdfscanner/intermediates/ndkBuild/profile/obj NDK_LIBS_OUT\u003d/Users/mrmar/Development/Flutter/areaseys-flutter-pdfscanner/example/build/pdfscanner/intermediates/ndkBuild/profile/lib clean"
+  ],
+  "libraries": {
+    "Scanner-profile-x86_64": {
+      "buildCommand": "/Users/mrmar/Library/Android/sdk/ndk/20.0.5594570/ndk-build NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003d/Users/mrmar/Development/Flutter/areaseys-flutter-pdfscanner/android/src/main/jni/Android.mk NDK_APPLICATION_MK\u003d/Users/mrmar/Development/Flutter/areaseys-flutter-pdfscanner/android/src/main/jni/Application.mk APP_ABI\u003dx86_64 NDK_ALL_ABIS\u003dx86_64 NDK_DEBUG\u003d1 APP_PLATFORM\u003dandroid-16 NDK_OUT\u003d/Users/mrmar/Development/Flutter/areaseys-flutter-pdfscanner/example/build/pdfscanner/intermediates/ndkBuild/profile/obj NDK_LIBS_OUT\u003d/Users/mrmar/Development/Flutter/areaseys-flutter-pdfscanner/example/build/pdfscanner/intermediates/ndkBuild/profile/lib /Users/mrmar/Development/Flutter/areaseys-flutter-pdfscanner/example/build/pdfscanner/intermediates/ndkBuild/profile/obj/local/x86_64/libScanner.so",
+      "toolchain": "toolchain-x86_64",
+      "abi": "x86_64",
+      "artifactName": "Scanner",
+      "files": [
+        {
+          "src": "/Users/mrmar/Development/Flutter/areaseys-flutter-pdfscanner/android/src/main/jni/scan.cpp",
+          "flags": "-target x86_64-none-linux-android21 -fdata-sections -ffunction-sections -fstack-protector-strong -funwind-tables -no-canonical-prefixes --sysroot /Users/mrmar/Library/Android/sdk/ndk/20.0.5594570/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -g -Wno-invalid-command-line-argument -Wno-unused-command-line-argument -fno-addrsig -fno-exceptions -fno-rtti -fPIC -O0 -UNDEBUG -fno-limit-debug-info -I\"src/main/jni/sdk/native/jni/include/opencv\" -I\"src/main/jni/sdk/native/jni/include\" -I/Users/mrmar/Library/Android/sdk/ndk/20.0.5594570/sources/cxx-stl/llvm-libc++/include -I/Users/mrmar/Library/Android/sdk/ndk/20.0.5594570/sources/cxx-stl/llvm-libc++/../llvm-libc++abi/include -I/Users/mrmar/Development/Flutter/areaseys-flutter-pdfscanner/android/src/main/jni -std\u003dc++11 -frtti -fexceptions -DANDROID -fPIC -DANDROID -fsigned-char -nostdinc++ -Wa,--noexecstack -Wformat -Werror\u003dformat-security"
+        }
+      ],
+      "output": "/Users/mrmar/Development/Flutter/areaseys-flutter-pdfscanner/example/build/pdfscanner/intermediates/ndkBuild/profile/obj/local/x86_64/libScanner.so"
+    }
+  },
+  "toolchains": {
+    "toolchain-x86_64": {
+      "cppCompilerExecutable": "/Users/mrmar/Library/Android/sdk/ndk/20.0.5594570/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++"
+    }
+  },
+  "cFileExtensions": [],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}
