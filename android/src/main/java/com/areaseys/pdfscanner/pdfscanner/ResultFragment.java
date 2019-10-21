@@ -8,13 +8,19 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import androidx.core.content.FileProvider;
+
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Date;
 
 /**
  * Created by jhansi on 29/03/15.
@@ -43,18 +49,18 @@ public class ResultFragment extends Fragment {
     }
 
     private void init() {
-        scannedImageView = (ImageView) view.findViewById(R.id.scannedImage);
-        originalButton = (Button) view.findViewById(R.id.original);
+        scannedImageView = view.findViewById(R.id.scannedImage);
+        originalButton = view.findViewById(R.id.original);
         originalButton.setOnClickListener(new OriginalButtonClickListener());
-        MagicColorButton = (Button) view.findViewById(R.id.magicColor);
+        MagicColorButton = view.findViewById(R.id.magicColor);
         MagicColorButton.setOnClickListener(new MagicColorButtonClickListener());
-        grayModeButton = (Button) view.findViewById(R.id.grayMode);
+        grayModeButton = view.findViewById(R.id.grayMode);
         grayModeButton.setOnClickListener(new GrayButtonClickListener());
-        bwButton = (Button) view.findViewById(R.id.BWMode);
+        bwButton = view.findViewById(R.id.BWMode);
         bwButton.setOnClickListener(new BWButtonClickListener());
         Bitmap bitmap = getBitmap();
         setScannedImage(bitmap);
-        doneButton = (Button) view.findViewById(R.id.doneButton);
+        doneButton = view.findViewById(R.id.doneButton);
         doneButton.setOnClickListener(new DoneButtonClickListener());
     }
 
@@ -87,14 +93,44 @@ public class ResultFragment extends Fragment {
                 @Override
                 public void run() {
                     try {
-                        Intent data = new Intent();
+                        final Intent data = new Intent();
                         Bitmap bitmap = transformed;
                         if (bitmap == null) {
                             bitmap = original;
                         }
-                        Uri uri = Utils.getUri(getActivity(), bitmap);
+                        final Uri uri = Utils.getUri(getActivity(), bitmap);
                         data.putExtra(ScanConstants.SCANNED_RESULT, uri);
                         getActivity().setResult(Activity.RESULT_OK, data);
+
+                        final String root = Environment.getExternalStorageDirectory().toString();
+                        final String path = root + "/6conecta_documents";
+
+                        //Save image in pictures (temporally)
+                        final File file = new File(path);
+                        if (!file.exists()) {
+                            file.mkdir();
+                        }
+
+                        final String finalPath = file.toString() + "/scann_" + new Date().getTime() + ".png";
+
+                        try (final FileOutputStream fos = new FileOutputStream(finalPath)) {
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                            fos.flush();
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    PdfscannerPlugin.result.success(finalPath);
+                                }
+                            });
+                        } catch (final Exception ex) {
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    PdfscannerPlugin.result.error("ERROR on write scan image", "Error on save scanned photo", ex);
+                                }
+                            });
+                        }
+
                         original.recycle();
                         System.gc();
                         getActivity().runOnUiThread(new Runnable() {

@@ -33,7 +33,7 @@ android {
         main.jni.srcDirs = ['src/main/libs']
     }
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 21
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {
             moduleName "Scanner"

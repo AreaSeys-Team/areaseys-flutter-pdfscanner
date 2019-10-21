@@ -33,7 +33,6 @@ class PdfscannerPlugin : MethodCallHandler {
 
   private fun scan(result: Result) {
     PdfscannerPlugin.result = result
-    //Try load native libraries
     try {
       val intent = Intent(context, ScanActivity::class.java)
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

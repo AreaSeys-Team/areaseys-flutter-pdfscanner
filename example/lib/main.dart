@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:pdfscanner/pdfscanner.dart';
 
@@ -9,7 +11,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _path = 'press button for open native plugin and start scan.';
+  final List<String> _paths = List();
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +23,36 @@ class _MyAppState extends State<MyApp> {
         body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            Expanded(
+              child: GridView.builder(
+                itemCount: _paths.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 3,
+                  mainAxisSpacing: 3,
+                ),
+                itemBuilder: (ctx, index) => Container(
+                  child: Stack(
+                    children: <Widget>[
+                      Image.file(File(_paths[index])),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          Container(
+                            child: Text(
+                              "Page" + index.toString(),
+                              textAlign: TextAlign.center,
+                            ),
+                            color: Color(0x94C4C4C4),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
             Text(
               'Ruta del PDF escaneado:',
               textAlign: TextAlign.center,
@@ -29,16 +61,17 @@ class _MyAppState extends State<MyApp> {
             Container(
               height: 20,
             ),
-            Text(
-              _path,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 20),
-            ),
             Container(
               height: 50,
             ),
             MaterialButton(
-              onPressed: () => Pdfscanner.scan().then((String path) => setState(() => _path = path)).catchError(
+              onPressed: () => Pdfscanner.scan()
+                  .then((String path) => setState(() {
+                        setState(() {
+                          _paths.add(path);
+                        });
+                      }))
+                  .catchError(
                     (error) => showDialog(
                       context: context,
                       builder: (ctx) => AlertDialog(
