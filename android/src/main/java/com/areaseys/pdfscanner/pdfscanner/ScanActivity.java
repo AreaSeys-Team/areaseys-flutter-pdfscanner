@@ -46,17 +46,6 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
         super.onCreate(savedInstanceState);
         setContentView(R.layout.scan_layout);
         checkPermissions();
-        if (getIntent() != null && getIntent().getExtras() != null) {
-            if (getIntent().getExtras().getInt("SOURCE") == ScanConstants.OPEN_CAMERA) {
-                openCamera();
-            }
-            else if (getIntent().getExtras().getInt("SOURCE") == ScanConstants.OPEN_MEDIA) {
-                openMediaContent();
-            }
-        }
-        else {
-            finish();
-        }
     }
 
     @Override
@@ -77,6 +66,9 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
                     }
                 }
                 this.finish();
+            }
+            else {
+                launch();
             }
         }
     }
@@ -246,6 +238,23 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
                     Manifest.permission.CAMERA,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
             }, REQUEST_PERMISSIONS_CODE);
+        }
+        else {
+            launch();
+        }
+    }
+
+    private void launch() {
+        if (getIntent() != null && getIntent().getExtras() != null) {
+            if (getIntent().getExtras().getInt("SOURCE") == ScanConstants.OPEN_CAMERA) {
+                openCamera();
+            }
+            else if (getIntent().getExtras().getInt("SOURCE") == ScanConstants.OPEN_MEDIA) {
+                openMediaContent();
+            }
+        }
+        else {
+            finish();
         }
     }
 
