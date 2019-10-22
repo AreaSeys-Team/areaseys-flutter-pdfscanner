@@ -10,10 +10,11 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="@color/bottom_background_color"
+        android:background="@android:color/white"
         android:orientation="horizontal"
         android:padding="@dimen/bottom_bar_padding"
-        android:text="@string/scan"></Button>
+        android:text="@string/scan"
+        android:textSize="16sp"></Button>
 
     <FrameLayout
         android:layout_width="match_parent"

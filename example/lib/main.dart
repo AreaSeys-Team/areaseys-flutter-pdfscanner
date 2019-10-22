@@ -27,7 +27,9 @@ class _StateReorderableWrap extends State<ContentBody> {
 
   @override
   void didChangeDependencies() {
-/*    _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738252272.png");
+    //_processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571743615395.png");
+    //_processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571744811226.png");
+    _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738275934.png");
     _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738275934.png");
     _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738290705.png");
     _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738252272.png");
@@ -36,7 +38,9 @@ class _StateReorderableWrap extends State<ContentBody> {
     _pageItems.add(_buildPageItem(1));
     _pageItems.add(_buildPageItem(2));
     _pageItems.add(_buildPageItem(3));
-    _pageItems.add(_buildPageItem(4));*/
+    _pageItems.add(_buildPageItem(4));
+    //_pageItems.add(_buildPageItem(0));
+    //_pageItems.add(_buildPageItem(1));
     super.didChangeDependencies();
   }
 
@@ -46,7 +50,7 @@ class _StateReorderableWrap extends State<ContentBody> {
         alignment: WrapAlignment.start,
         spacing: 5,
         runSpacing: 10,
-        children: _pageItems,
+        children: List<Widget>.generate(_processedImagesPaths.length, _buildPageItem),
         minMainAxisCount: 3,
         onReorder: _onReorder,
         onNoReorder: (int index) {
@@ -58,6 +62,7 @@ class _StateReorderableWrap extends State<ContentBody> {
           debugPrint('${DateTime.now().toString().substring(5, 22)} reorder started: index:$index');
         });
     return Scaffold(
+      backgroundColor: Colors.grey[200],
       floatingActionButton: FloatingActionButton(
         onPressed: _launchScannerPlugin,
         child: Icon(Icons.add),
@@ -83,6 +88,9 @@ class _StateReorderableWrap extends State<ContentBody> {
               ),
             ),
             Container(
+              margin: EdgeInsets.only(
+                top: 40,
+              ),
               alignment: Alignment.center,
               child: wrap,
             ),
@@ -143,7 +151,7 @@ class _StateReorderableWrap extends State<ContentBody> {
         .then((final String path) => setState(() => setState(() {
               print("NEW PATH: $path");
               _processedImagesPaths.add(path);
-              _pageItems.add(_buildPageItem(_processedImagesPaths.length - 1));
+              //_pageItems.add(_buildPageItem(_processedImagesPaths.length - 1));
             })))
         .catchError(
           (final error) => showDialog(
@@ -158,48 +166,71 @@ class _StateReorderableWrap extends State<ContentBody> {
 
   void _onReorder(final int oldIndex, final int newIndex) {
     setState(() {
-      Widget pageItem = _pageItems.removeAt(oldIndex);
-      _pageItems.insert(newIndex, pageItem);
+      final String deleted = _processedImagesPaths.removeAt(oldIndex);
+      _processedImagesPaths.insert(newIndex, deleted);
     });
   }
 
   Widget _buildPageItem(final int index) {
     final width = (MediaQuery.of(context).size.width / 3) - 10;
-    final height = width * 1.5;
+    final height = width * 1.6;
     print(width.toString());
     return Container(
       width: width,
       height: height,
-      child: Stack(
-        alignment: Alignment.center,
+      child: Column(
         children: <Widget>[
-          Container(
-              margin: EdgeInsets.all(5),
-              child: Image.file(
-                File(_processedImagesPaths[index]),
-                fit: BoxFit.cover,
-              )),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Container(
-                child: Text(
-                  "Page" + index.toString(),
-                  textAlign: TextAlign.center,
+          Expanded(
+            child: Stack(
+              children: <Widget>[
+                Container(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(3),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          blurRadius: 5.0,
+                        ),
+                      ],
+                    ),
+                    margin: EdgeInsets.all(width / 10),
+                    padding: EdgeInsets.all(width / 20),
+                    child: Image.file(
+                      File(_processedImagesPaths[index]),
+                      fit: BoxFit.cover,
+                    ),
+                    alignment: Alignment.center,
+                  ),
                 ),
-                decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [
-                    Colors.white,
-                    Color(0x94C4C4C4),
-                    Colors.white,
-                  ],
-                )),
-              ),
-            ],
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Material(
+                    color: Colors.grey[300],
+                    shape: CircleBorder(),
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          _processedImagesPaths.removeAt(index);
+                        });
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.close,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.only(top: 5),
+            child: Text("Page $index"),
           ),
         ],
       ),

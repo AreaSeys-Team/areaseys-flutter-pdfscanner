@@ -9,7 +9,8 @@
         android:id="@+id/topBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical">
+        android:layout_gravity="center_vertical"
+        android:layout_marginTop="5dp">
 
         <Button
             android:id="@+id/original"
@@ -60,10 +61,11 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="@color/bottom_background_color"
+        android:background="@android:color/white"
         android:orientation="horizontal"
         android:padding="@dimen/bottom_bar_padding"
-        android:text="@string/done" />
+        android:text="@string/done"
+        android:textSize="16sp" />
 
 
     <FrameLayout
