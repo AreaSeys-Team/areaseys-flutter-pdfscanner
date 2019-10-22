@@ -26,15 +26,16 @@ class PdfscannerPlugin : MethodCallHandler {
 
   override fun onMethodCall(call: MethodCall, result: Result) {
     when (call.method) {
-      "scan" -> scan(result)
+      "scan" -> scan(result, call.arguments as Int)
       else -> result.notImplemented()
     }
   }
 
-  private fun scan(result: Result) {
+  private fun scan(result: Result, source: Int) {
     PdfscannerPlugin.result = result
     try {
       val intent = Intent(context, ScanActivity::class.java)
+      intent.putExtra("SOURCE", source)
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       context.startActivity(intent)
     } catch (ex: Exception) {
