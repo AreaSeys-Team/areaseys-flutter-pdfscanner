@@ -23,26 +23,6 @@ class ContentBody extends StatefulWidget {
 
 class _StateReorderableWrap extends State<ContentBody> {
   final List<String> _processedImagesPaths = List(); //<-- returned by plugin.
-  final List<Widget> _pageItems = List<Widget>();
-
-  @override
-  void didChangeDependencies() {
-    //_processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571743615395.png");
-    //_processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571744811226.png");
-    _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738275934.png");
-    _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738275934.png");
-    _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738290705.png");
-    _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738252272.png");
-    _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738275934.png");
-    _pageItems.add(_buildPageItem(0));
-    _pageItems.add(_buildPageItem(1));
-    _pageItems.add(_buildPageItem(2));
-    _pageItems.add(_buildPageItem(3));
-    _pageItems.add(_buildPageItem(4));
-    //_pageItems.add(_buildPageItem(0));
-    //_pageItems.add(_buildPageItem(1));
-    super.didChangeDependencies();
-  }
 
   @override
   Widget build(BuildContext context) {
