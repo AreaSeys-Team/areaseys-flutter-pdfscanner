@@ -27,36 +27,16 @@ class _StateReorderableWrap extends State<ContentBody> {
 
   @override
   void didChangeDependencies() {
-    _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738252272.png");
+/*    _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738252272.png");
     _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738275934.png");
     _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738290705.png");
     _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738252272.png");
     _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738275934.png");
-    _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738290705.png");
-    _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738252272.png");
-    _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738275934.png");
-    _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738290705.png");
-    _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738252272.png");
-    _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738275934.png");
-    _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738290705.png");
-    _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738252272.png");
-    _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738275934.png");
-    _processedImagesPaths.add("/storage/emulated/0/6conecta_documents/scann_1571738290705.png");
     _pageItems.add(_buildPageItem(0));
     _pageItems.add(_buildPageItem(1));
     _pageItems.add(_buildPageItem(2));
     _pageItems.add(_buildPageItem(3));
-    _pageItems.add(_buildPageItem(4));
-    _pageItems.add(_buildPageItem(5));
-    _pageItems.add(_buildPageItem(6));
-    _pageItems.add(_buildPageItem(7));
-    _pageItems.add(_buildPageItem(8));
-    _pageItems.add(_buildPageItem(9));
-    _pageItems.add(_buildPageItem(10));
-    _pageItems.add(_buildPageItem(11));
-    _pageItems.add(_buildPageItem(12));
-    _pageItems.add(_buildPageItem(13));
-    _pageItems.add(_buildPageItem(14));
+    _pageItems.add(_buildPageItem(4));*/
     super.didChangeDependencies();
   }
 
@@ -122,7 +102,7 @@ class _StateReorderableWrap extends State<ContentBody> {
           title: Text("Select image source"),
           children: <Widget>[
             SimpleDialogOption(
-              child:  Row(
+              child: Row(
                 children: <Widget>[
                   Icon(Icons.camera_alt),
                   Container(width: 5),
@@ -187,68 +167,42 @@ class _StateReorderableWrap extends State<ContentBody> {
     final width = (MediaQuery.of(context).size.width / 3) - 10;
     final height = width * 1.5;
     print(width.toString());
-    if (index < _processedImagesPaths.length) {
-      return Container(
-        width: width,
-        height: height,
-        child: Stack(
-          alignment: Alignment.center,
-          children: <Widget>[
-            Container(
-                margin: EdgeInsets.all(5),
-                child: Image.file(
-                  File(_processedImagesPaths[index]),
-                  fit: BoxFit.cover,
-                )),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Container(
-                  child: Text(
-                    "Page" + index.toString(),
-                    textAlign: TextAlign.center,
-                  ),
-                  decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      Colors.white,
-                      Color(0x94C4C4C4),
-                      Colors.white,
-                    ],
-                  )),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    } else {
-      return Container(
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Colors.grey[200],
-          ),
-        ),
+    return Container(
+      width: width,
+      height: height,
+      child: Stack(
         alignment: Alignment.center,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            IconButton(
-              icon: Icon(Icons.add),
-              iconSize: 50,
-              color: Colors.grey[200],
-              onPressed: _launchScannerPlugin,
-            ),
-            Text(
-              "Add scan",
-              style: TextStyle(color: Colors.grey[300]),
-            ),
-          ],
-        ),
-      );
-    }
+        children: <Widget>[
+          Container(
+              margin: EdgeInsets.all(5),
+              child: Image.file(
+                File(_processedImagesPaths[index]),
+                fit: BoxFit.cover,
+              )),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Container(
+                child: Text(
+                  "Page" + index.toString(),
+                  textAlign: TextAlign.center,
+                ),
+                decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    Colors.white,
+                    Color(0x94C4C4C4),
+                    Colors.white,
+                  ],
+                )),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

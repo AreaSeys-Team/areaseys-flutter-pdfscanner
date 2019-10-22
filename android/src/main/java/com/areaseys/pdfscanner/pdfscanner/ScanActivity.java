@@ -15,7 +15,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.View;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,10 +34,12 @@ import androidx.core.content.FileProvider;
 public class ScanActivity extends AppCompatActivity implements IScanner, ComponentCallbacks2 {
 
     private final int REQUEST_PERMISSIONS_CODE = 1234;
-
-    private View view;
     private Uri fileUri;
-    private IScanner scanner;
+
+    static {
+        System.loadLibrary("Scanner");
+        System.loadLibrary("opencv_java3");
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +53,9 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
             else if (getIntent().getExtras().getInt("SOURCE") == ScanConstants.OPEN_MEDIA) {
                 openMediaContent();
             }
+        }
+        else {
+            finish();
         }
     }
 
@@ -153,73 +157,6 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
         }
     }
 
-    public native Bitmap getScannedBitmap(Bitmap bitmap, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
-
-    public native Bitmap getGrayBitmap(Bitmap bitmap);
-
-    public native Bitmap getMagicColorBitmap(Bitmap bitmap);
-
-    public native Bitmap getBWBitmap(Bitmap bitmap);
-
-    public native float[] getPoints(Bitmap bitmap);
-
-    protected int getPreferenceContent() {
-        return getIntent().getIntExtra(ScanConstants.OPEN_INTENT_PREFERENCE, 0);
-    }
-
-    /**
-     * Check permissions and request if is necessary.
-     */
-    private void checkPermissions() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-            }, REQUEST_PERMISSIONS_CODE);
-        }
-    }
-
-    static {
-        System.loadLibrary("Scanner");
-        System.loadLibrary("opencv_java3");
-    }
-
-    public void openMediaContent() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("image/*");
-        startActivityForResult(intent, ScanConstants.PICKFILE_REQUEST_CODE);
-    }
-
-    public void openCamera() {
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        File file = createImageFile();
-        boolean isDirectoryCreated = file.getParentFile().mkdirs();
-        Log.d("", "openCamera: isDirectoryCreated: " + isDirectoryCreated);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Uri tempFileUri = FileProvider.getUriForFile(getApplicationContext(), "com.scanlibrary.provider", file);
-            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempFileUri);
-        }
-        else {
-            Uri tempFileUri = Uri.fromFile(file);
-            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempFileUri);
-        }
-        startActivityForResult(cameraIntent, ScanConstants.START_CAMERA_REQUEST_CODE);
-    }
-
-    private File createImageFile() {
-        clearTempImages();
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new
-                                                                                  Date());
-        File file = new File(ScanConstants.IMAGE_PATH, "IMG_" + timeStamp +
-                                                       ".jpg");
-        fileUri = Uri.fromFile(file);
-        return file;
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -248,10 +185,68 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
         }
     }
 
+    public native Bitmap getScannedBitmap(Bitmap bitmap, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
+
+    public native Bitmap getGrayBitmap(Bitmap bitmap);
+
+    public native Bitmap getMagicColorBitmap(Bitmap bitmap);
+
+    public native Bitmap getBWBitmap(Bitmap bitmap);
+
+    public native float[] getPoints(Bitmap bitmap);
+
+    public void openMediaContent() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("image/*");
+        startActivityForResult(intent, ScanConstants.PICKFILE_REQUEST_CODE);
+    }
+
+    public void openCamera() {
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        File file = createImageFile();
+        boolean isDirectoryCreated = file.getParentFile().mkdirs();
+        Log.d("", "openCamera: isDirectoryCreated: " + isDirectoryCreated);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Uri tempFileUri = FileProvider.getUriForFile(getApplicationContext(), "com.scanlibrary.provider", file);
+            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempFileUri);
+        }
+        else {
+            Uri tempFileUri = Uri.fromFile(file);
+            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempFileUri);
+        }
+        startActivityForResult(cameraIntent, ScanConstants.START_CAMERA_REQUEST_CODE);
+    }
+
     protected void postImagePick(Bitmap bitmap) {
         Uri uri = Utils.getUri(this, bitmap);
         bitmap.recycle();
         onBitmapSelect(uri);
+    }
+
+    private File createImageFile() {
+        clearTempImages();
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new
+                                                                                  Date());
+        File file = new File(ScanConstants.IMAGE_PATH, "IMG_" + timeStamp +
+                                                       ".jpg");
+        fileUri = Uri.fromFile(file);
+        return file;
+    }
+
+    /**
+     * Check permissions and request if is necessary.
+     */
+    private void checkPermissions() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+            }, REQUEST_PERMISSIONS_CODE);
+        }
     }
 
     private Bitmap getBitmap(Uri selectedimg) throws IOException {

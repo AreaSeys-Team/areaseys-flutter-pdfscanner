@@ -28,10 +28,10 @@ import java.util.Map;
 
 /**
  * Created by jhansi on 29/03/15.
+ * modified by Santi Hoyos on 22/10/19
  */
 public class ScanFragment extends Fragment {
 
-    private Button scanButton;
     private ImageView sourceImageView;
     private FrameLayout sourceFrame;
     private PolygonView polygonView;
@@ -61,11 +61,11 @@ public class ScanFragment extends Fragment {
     }
 
     private void init() {
-        sourceImageView = (ImageView) view.findViewById(R.id.sourceImageView);
-        scanButton = (Button) view.findViewById(R.id.scanButton);
+        sourceImageView = view.findViewById(R.id.sourceImageView);
+        Button scanButton = view.findViewById(R.id.scanButton);
         scanButton.setOnClickListener(new ScanButtonClickListener());
-        sourceFrame = (FrameLayout) view.findViewById(R.id.sourceFrame);
-        polygonView = (PolygonView) view.findViewById(R.id.polygonView);
+        sourceFrame =  view.findViewById(R.id.sourceFrame);
+        polygonView =  view.findViewById(R.id.polygonView);
         sourceFrame.post(new Runnable() {
             @Override
             public void run() {
@@ -90,8 +90,7 @@ public class ScanFragment extends Fragment {
     }
 
     private Uri getUri() {
-        Uri uri = getArguments().getParcelable(ScanConstants.SELECTED_BITMAP);
-        return uri;
+        return getArguments().getParcelable(ScanConstants.SELECTED_BITMAP);
     }
 
     private void setBitmap(Bitmap original) {
@@ -179,8 +178,8 @@ public class ScanFragment extends Fragment {
     }
 
     private Bitmap getScannedBitmap(Bitmap original, Map<Integer, PointF> points) {
-        int width = original.getWidth();
-        int height = original.getHeight();
+        //int width = original.getWidth();
+        //int height = original.getHeight();
         float xRatio = (float) original.getWidth() / sourceImageView.getWidth();
         float yRatio = (float) original.getHeight() / sourceImageView.getHeight();
 
