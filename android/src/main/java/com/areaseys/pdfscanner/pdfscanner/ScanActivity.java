@@ -12,6 +12,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 
 import java.io.File;
@@ -197,7 +198,7 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
     public final void openCamera() {
         final Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         final File file = createImageFile();
-        boolean isDirectoryCreated = file.getParentFile().mkdirs();
+        file.getParentFile().mkdirs();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             final Uri tempFileUri = FileProvider.getUriForFile(getApplicationContext(), "com.areaseys_authority", file);
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempFileUri);
@@ -218,7 +219,7 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
     private File createImageFile() {
         clearTempImages();
         File file = new File(
-                getIntent().getStringExtra(BUNDLE_EXTRA_KEY_SCANNED_IMAGES_PATH),
+                Environment.getExternalStorageDirectory().getPath() + getIntent().getStringExtra(BUNDLE_EXTRA_KEY_SCANNED_IMAGES_PATH),
                 getIntent().getStringExtra(BUNDLE_EXTRA_KEY_SCANNED_IMAGE_NAME)
         );
         fileUri = Uri.fromFile(file);
@@ -256,6 +257,8 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
             finish();
         }
     }
+
+
 
     private Bitmap getBitmap(Uri selectedimg) throws IOException {
         final BitmapFactory.Options options = new BitmapFactory.Options();

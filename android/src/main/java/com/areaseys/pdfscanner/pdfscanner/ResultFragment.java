@@ -20,6 +20,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 /**
  * Created by jhansi on 29/03/15.
  */
@@ -117,29 +119,32 @@ public class ResultFragment extends Fragment {
                         try (final FileOutputStream fos = new FileOutputStream(finalPath)) {
                             bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
                             fos.flush();
-                            final Intent intentResult = new Intent();
-                            data.putExtra(ScanActivity.BUNDLE_RESULT_KEY_SCANNED_IMAGE_PATH, finalPath);
-                            getActivity().setResult(ScanActivity.RESULT_CODE_OK, intentResult);
-                        }
-                        catch (final Exception ex) {
-                            getActivity().setResult(ScanActivity.RESULT_CODE_ERROR, null);
                             getActivity().runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    final Intent intentResult = new Intent();
+                                    intentResult.putExtra(ScanActivity.BUNDLE_RESULT_KEY_SCANNED_IMAGE_PATH, finalPath);
+                                    getActivity().setResult(ScanActivity.RESULT_CODE_OK, intentResult);
+                                    original.recycle();
+                                    System.gc();
+                                    dismissDialog();
                                     getActivity().finish();
                                 }
                             });
                         }
+                        catch (final Exception ex) {
 
-                        original.recycle();
-                        System.gc();
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                dismissDialog();
-                                getActivity().finish();
-                            }
-                        });
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    getActivity().setResult(ScanActivity.RESULT_CODE_ERROR, null);
+                                    original.recycle();
+                                    System.gc();
+                                    dismissDialog();
+                                    getActivity().finish();
+                                }
+                            });
+                        }
                     }
                     catch (Exception e) {
                         e.printStackTrace();
