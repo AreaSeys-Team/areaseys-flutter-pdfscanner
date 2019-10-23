@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - pdfscanner (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `.symlinks/flutter/ios`)
+  - pdfscanner (from `.symlinks/plugins/pdfscanner/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: ".symlinks/flutter/ios"
+  pdfscanner:
+    :path: ".symlinks/plugins/pdfscanner/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  pdfscanner: ba486ade0159e3813a97d76b935e30b92bf6ca6b
+
+PODFILE CHECKSUM: 10ae9c18d12c9ffc2275c9a159a3b1e281990db0
+
+COCOAPODS: 1.6.1

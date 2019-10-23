@@ -74,6 +74,22 @@ class _StateReorderableWrap extends State<ContentBody> {
               alignment: Alignment.center,
               child: wrap,
             ),
+            MaterialButton(
+              child: Text("Generate PDF", style: TextStyle(color: Colors.white)),
+              onPressed: () => Pdfscanner.generatePdf(
+                imagesPaths: _processedImagesPaths,
+                pdfName: "PDF_name1.pdf",
+                marginTop: 50,
+                marginBottom: 50,
+                marginLeft: 40,
+                marginRight: 40,
+                pageSize: PageSize.A4,
+                generatedPDFsPath: "/6conecta_Contractors/generated_pdf"
+              ).then((result) {
+                print("RESULTADO DE LA GENERACION DE PDF: " + result);
+              }),
+              color: Colors.blueAccent,
+            ),
           ],
         ),
       ),

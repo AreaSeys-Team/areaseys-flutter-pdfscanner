@@ -15,8 +15,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 
-import androidx.core.content.FileProvider;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -26,6 +24,8 @@ import java.util.Date;
  * Created by jhansi on 29/03/15.
  */
 public class ResultFragment extends Fragment {
+
+    public static final String BUNDLE_EXTRA_KEY_SCANNED_RESULT = "scannedresult";
 
     private View view;
     private ImageView scannedImageView;
@@ -67,17 +67,18 @@ public class ResultFragment extends Fragment {
     private Bitmap getBitmap() {
         Uri uri = getUri();
         try {
-            original = Utils.getBitmap(getActivity(), uri);
+            original = UtilsKt.getBitmap(getActivity(), uri);
             getActivity().getContentResolver().delete(uri, null, null);
             return original;
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
 
     private Uri getUri() {
-        Uri uri = getArguments().getParcelable(ScanConstants.SCANNED_RESULT);
+        Uri uri = getArguments().getParcelable(BUNDLE_EXTRA_KEY_SCANNED_RESULT);
         return uri;
     }
 
@@ -98,17 +99,17 @@ public class ResultFragment extends Fragment {
                         if (bitmap == null) {
                             bitmap = original;
                         }
-                        final Uri uri = Utils.getUri(getActivity(), bitmap);
-                        data.putExtra(ScanConstants.SCANNED_RESULT, uri);
+                        final Uri uri = UtilsKt.getUri(getActivity(), bitmap);
+                        data.putExtra(BUNDLE_EXTRA_KEY_SCANNED_RESULT, uri);
                         getActivity().setResult(Activity.RESULT_OK, data);
 
                         final String root = Environment.getExternalStorageDirectory().toString();
-                        final String path = root + "/6conecta_documents";
+                        final String path = root + "/6conecta_Contractors/scanned_images";
 
                         //Save image in pictures (temporally)
                         final File file = new File(path);
                         if (!file.exists()) {
-                            file.mkdir();
+                            file.mkdirs();
                         }
 
                         final String finalPath = file.toString() + "/scann_" + new Date().getTime() + ".png";
@@ -116,17 +117,16 @@ public class ResultFragment extends Fragment {
                         try (final FileOutputStream fos = new FileOutputStream(finalPath)) {
                             bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
                             fos.flush();
+                            final Intent intentResult = new Intent();
+                            data.putExtra(ScanActivity.BUNDLE_RESULT_KEY_SCANNED_IMAGE_PATH, finalPath);
+                            getActivity().setResult(ScanActivity.RESULT_CODE_OK, intentResult);
+                        }
+                        catch (final Exception ex) {
+                            getActivity().setResult(ScanActivity.RESULT_CODE_ERROR, null);
                             getActivity().runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    PdfscannerPlugin.result.success(finalPath);
-                                }
-                            });
-                        } catch (final Exception ex) {
-                            getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    PdfscannerPlugin.result.error("ERROR on write scan image", "Error on save scanned photo", ex);
+                                    getActivity().finish();
                                 }
                             });
                         }
@@ -140,7 +140,8 @@ public class ResultFragment extends Fragment {
                                 getActivity().finish();
                             }
                         });
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
@@ -157,7 +158,8 @@ public class ResultFragment extends Fragment {
                 public void run() {
                     try {
                         transformed = ((ScanActivity) getActivity()).getBWBitmap(original);
-                    } catch (final OutOfMemoryError e) {
+                    }
+                    catch (final OutOfMemoryError e) {
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -190,7 +192,8 @@ public class ResultFragment extends Fragment {
                 public void run() {
                     try {
                         transformed = ((ScanActivity) getActivity()).getMagicColorBitmap(original);
-                    } catch (final OutOfMemoryError e) {
+                    }
+                    catch (final OutOfMemoryError e) {
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -222,7 +225,8 @@ public class ResultFragment extends Fragment {
                 transformed = original;
                 scannedImageView.setImageBitmap(original);
                 dismissDialog();
-            } catch (OutOfMemoryError e) {
+            }
+            catch (OutOfMemoryError e) {
                 e.printStackTrace();
                 dismissDialog();
             }
@@ -238,7 +242,8 @@ public class ResultFragment extends Fragment {
                 public void run() {
                     try {
                         transformed = ((ScanActivity) getActivity()).getGrayBitmap(original);
-                    } catch (final OutOfMemoryError e) {
+                    }
+                    catch (final OutOfMemoryError e) {
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {

@@ -32,6 +32,8 @@ import java.util.Map;
  */
 public class ScanFragment extends Fragment {
 
+    public static final String BUNDLE_EXTRA_KEY_SELECTED_BITMAP = "selectedBitmap";
+
     private ImageView sourceImageView;
     private FrameLayout sourceFrame;
     private PolygonView polygonView;
@@ -56,16 +58,12 @@ public class ScanFragment extends Fragment {
         return view;
     }
 
-    public ScanFragment() {
-
-    }
-
     private void init() {
         sourceImageView = view.findViewById(R.id.sourceImageView);
         Button scanButton = view.findViewById(R.id.scanButton);
         scanButton.setOnClickListener(new ScanButtonClickListener());
-        sourceFrame =  view.findViewById(R.id.sourceFrame);
-        polygonView =  view.findViewById(R.id.polygonView);
+        sourceFrame = view.findViewById(R.id.sourceFrame);
+        polygonView = view.findViewById(R.id.polygonView);
         sourceFrame.post(new Runnable() {
             @Override
             public void run() {
@@ -80,17 +78,18 @@ public class ScanFragment extends Fragment {
     private Bitmap getBitmap() {
         Uri uri = getUri();
         try {
-            Bitmap bitmap = Utils.getBitmap(getActivity(), uri);
+            Bitmap bitmap = UtilsKt.getBitmap(getActivity(), uri);
             getActivity().getContentResolver().delete(uri, null, null);
             return bitmap;
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
 
     private Uri getUri() {
-        return getArguments().getParcelable(ScanConstants.SELECTED_BITMAP);
+        return getArguments().getParcelable(BUNDLE_EXTRA_KEY_SELECTED_BITMAP);
     }
 
     private void setBitmap(Bitmap original) {
@@ -155,7 +154,8 @@ public class ScanFragment extends Fragment {
             Map<Integer, PointF> points = polygonView.getPoints();
             if (isScanPointsValid(points)) {
                 new ScanAsyncTask(points).execute();
-            } else {
+            }
+            else {
                 showErrorDialog();
             }
         }
@@ -212,8 +212,8 @@ public class ScanFragment extends Fragment {
 
         @Override
         protected Bitmap doInBackground(Void... params) {
-            Bitmap bitmap =  getScannedBitmap(original, points);
-            Uri uri = Utils.getUri(getActivity(), bitmap);
+            Bitmap bitmap = getScannedBitmap(original, points);
+            Uri uri = UtilsKt.getUri(getActivity(), bitmap);
             scanner.onScanFinish(uri);
             return bitmap;
         }
@@ -235,5 +235,4 @@ public class ScanFragment extends Fragment {
     protected void dismissDialog() {
         progressDialogFragment.dismissAllowingStateLoss();
     }
-
 }

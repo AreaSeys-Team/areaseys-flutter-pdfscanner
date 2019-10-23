@@ -2,7 +2,6 @@ package com.areaseys.pdfscanner.pdfscanner;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.FragmentTransaction;
 import android.content.ComponentCallbacks2;
 import android.content.Intent;
@@ -14,12 +13,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,7 +29,18 @@ import androidx.core.content.FileProvider;
  */
 public class ScanActivity extends AppCompatActivity implements IScanner, ComponentCallbacks2 {
 
+    public static final String BUNDLE_EXTRA_KEY_SCAN_SOURCE = "scanSource";
+    public static final String BUNDLE_EXTRA_KEY_SCANNED_IMAGES_PATH = "scannedImagesPath";
+    public static final String BUNDLE_EXTRA_KEY_SCANNED_IMAGE_NAME = "scannedImageName";
+    public static final String BUNDLE_RESULT_KEY_SCANNED_IMAGE_PATH = "scannedImagePath";
+    public static final int RESULT_CODE_OK = 78546;
+    public static final int RESULT_CODE_ERROR = 78547;
+    public static final int BUNDLE_EXTRA_VALUE_OPEN_CAMERA = 4;
+    public static final int BUNDLE_EXTRA_VALUE_OPEN_MEDIA_FILE = 5;
+
     private final int REQUEST_PERMISSIONS_CODE = 1234;
+    private final int REQUEST_CODE_PICK_FILE = 4324;
+    private final int REQUEST_CODE_START_CAMERA = 4323;
     private Uri fileUri;
 
     static {
@@ -57,14 +64,7 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
                     (grantResults[1] != PackageManager.PERMISSION_GRANTED) || //<-- CAMERA
                     (grantResults[2] != PackageManager.PERMISSION_GRANTED)    //<-- WRITE STORAGE
             ) {
-                if (PdfscannerPlugin.result != null) {
-                    try {
-                        PdfscannerPlugin.result.error("-2", "", null);
-                    }
-                    catch (Exception ex) {
-                        //do nothing...
-                    }
-                }
+                setResult(RESULT_CODE_ERROR);
                 this.finish();
             }
             else {
@@ -74,10 +74,10 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
     }
 
     @Override
-    public void onBitmapSelect(Uri uri) {
-        ScanFragment fragment = new ScanFragment();
-        Bundle bundle = new Bundle();
-        bundle.putParcelable(ScanConstants.SELECTED_BITMAP, uri);
+    public void onBitmapSelect(final Uri uri) {
+        final ScanFragment fragment = new ScanFragment();
+        final Bundle bundle = new Bundle();
+        bundle.putParcelable(ScanFragment.BUNDLE_EXTRA_KEY_SELECTED_BITMAP, uri);
         fragment.setArguments(bundle);
         android.app.FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -87,10 +87,10 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
     }
 
     @Override
-    public void onScanFinish(Uri uri) {
+    public void onScanFinish(final Uri uri) {
         ResultFragment fragment = new ResultFragment();
         Bundle bundle = new Bundle();
-        bundle.putParcelable(ScanConstants.SCANNED_RESULT, uri);
+        bundle.putParcelable(ResultFragment.BUNDLE_EXTRA_KEY_SCANNED_RESULT, uri);
         fragment.setArguments(bundle);
         android.app.FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -156,11 +156,11 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
         if (resultCode == Activity.RESULT_OK) {
             try {
                 switch (requestCode) {
-                    case ScanConstants.START_CAMERA_REQUEST_CODE:
+                    case REQUEST_CODE_START_CAMERA:
                         bitmap = getBitmap(fileUri);
                         break;
 
-                    case ScanConstants.PICKFILE_REQUEST_CODE:
+                    case REQUEST_CODE_PICK_FILE:
                         bitmap = getBitmap(data.getData());
                         break;
                 }
@@ -191,37 +191,36 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("image/*");
-        startActivityForResult(intent, ScanConstants.PICKFILE_REQUEST_CODE);
+        startActivityForResult(intent, REQUEST_CODE_PICK_FILE);
     }
 
-    public void openCamera() {
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        File file = createImageFile();
+    public final void openCamera() {
+        final Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        final File file = createImageFile();
         boolean isDirectoryCreated = file.getParentFile().mkdirs();
-        Log.d("", "openCamera: isDirectoryCreated: " + isDirectoryCreated);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Uri tempFileUri = FileProvider.getUriForFile(getApplicationContext(), "com.scanlibrary.provider", file);
+            final Uri tempFileUri = FileProvider.getUriForFile(getApplicationContext(), "com.areaseys_authority", file);
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempFileUri);
         }
         else {
-            Uri tempFileUri = Uri.fromFile(file);
+            final Uri tempFileUri = Uri.fromFile(file);
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempFileUri);
         }
-        startActivityForResult(cameraIntent, ScanConstants.START_CAMERA_REQUEST_CODE);
+        startActivityForResult(cameraIntent, REQUEST_CODE_START_CAMERA);
     }
 
-    protected void postImagePick(Bitmap bitmap) {
-        Uri uri = Utils.getUri(this, bitmap);
+    protected void postImagePick(final Bitmap bitmap) {
+        Uri uri = UtilsKt.getUri(this, bitmap);
         bitmap.recycle();
         onBitmapSelect(uri);
     }
 
     private File createImageFile() {
         clearTempImages();
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new
-                                                                                  Date());
-        File file = new File(ScanConstants.IMAGE_PATH, "IMG_" + timeStamp +
-                                                       ".jpg");
+        File file = new File(
+                getIntent().getStringExtra(BUNDLE_EXTRA_KEY_SCANNED_IMAGES_PATH),
+                getIntent().getStringExtra(BUNDLE_EXTRA_KEY_SCANNED_IMAGE_NAME)
+        );
         fileUri = Uri.fromFile(file);
         return file;
     }
@@ -246,10 +245,10 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
 
     private void launch() {
         if (getIntent() != null && getIntent().getExtras() != null) {
-            if (getIntent().getExtras().getInt("SOURCE") == ScanConstants.OPEN_CAMERA) {
+            if (getIntent().getExtras().getInt(BUNDLE_EXTRA_KEY_SCAN_SOURCE) == BUNDLE_EXTRA_VALUE_OPEN_CAMERA) {
                 openCamera();
             }
-            else if (getIntent().getExtras().getInt("SOURCE") == ScanConstants.OPEN_MEDIA) {
+            else if (getIntent().getExtras().getInt(BUNDLE_EXTRA_KEY_SCAN_SOURCE) == BUNDLE_EXTRA_VALUE_OPEN_MEDIA_FILE) {
                 openMediaContent();
             }
         }
@@ -269,7 +268,8 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
 
     private void clearTempImages() {
         try {
-            File tempFolder = new File(ScanConstants.IMAGE_PATH);
+            final String imagePath = getIntent().getStringExtra(BUNDLE_EXTRA_KEY_SCANNED_IMAGES_PATH);
+            File tempFolder = new File(imagePath);
             for (File f : tempFolder.listFiles())
                 f.delete();
         }
