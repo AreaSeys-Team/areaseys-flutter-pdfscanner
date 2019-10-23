@@ -1,6 +1,7 @@
 package com.areaseys.pdfscanner.pdfscanner
 
 import android.content.Intent
+import android.util.Log
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -8,11 +9,11 @@ import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
-class PdfscannerPlugin : MethodCallHandler {
+class PdfscannerPlugin : MethodCallHandler, PluginRegistry.ActivityResultListener {
 
     companion object {
 
-        private const val REQUEST_CODE_SCAN = 1;
+        private const val REQUEST_CODE_SCAN = 1
         private lateinit var registrar: Registrar
 
         @JvmStatic
@@ -22,6 +23,9 @@ class PdfscannerPlugin : MethodCallHandler {
             this.registrar = registrar
         }
     }
+
+    private var registeredForOnActivityResult : Boolean = false
+    private var resultWaitingScan : Result? = null
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
@@ -55,21 +59,15 @@ class PdfscannerPlugin : MethodCallHandler {
         scannedImageName: String
     ) {
         try {
+            if (!registeredForOnActivityResult) {
+                registrar.addActivityResultListener(this)
+            }
+            resultWaitingScan = result
             val intent = Intent(registrar.activity(), ScanActivity::class.java)
             intent.putExtra(ScanActivity.BUNDLE_EXTRA_KEY_SCAN_SOURCE, scanSource)
             intent.putExtra(ScanActivity.BUNDLE_EXTRA_KEY_SCANNED_IMAGES_PATH, scannedImagesPath)
             intent.putExtra(ScanActivity.BUNDLE_EXTRA_KEY_SCANNED_IMAGE_NAME, scannedImageName)
             registrar.activity().startActivityForResult(intent, REQUEST_CODE_SCAN)
-            registrar.addActivityResultListener { requestCode, resultCode, data: Intent ->
-                if (requestCode == REQUEST_CODE_SCAN) {
-                    if (resultCode == ScanActivity.RESULT_CODE_OK) {
-                        result.success(data.getStringExtra(ScanActivity.BUNDLE_RESULT_KEY_SCANNED_IMAGE_PATH))
-                    } else if (resultCode == ScanActivity.RESULT_CODE_ERROR) {
-                        result.error("ERROR", "error on scan", null)
-                    }
-                }
-                return@addActivityResultListener false
-            }
         } catch (ex: Exception) {
             result.success(ex.message)
         }
@@ -109,5 +107,22 @@ class PdfscannerPlugin : MethodCallHandler {
         } catch (ex: Exception) {
             result.error("ERROR!", ex.message, ex)
         }
+    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
+        if (requestCode == REQUEST_CODE_SCAN) {
+            if (resultCode == ScanActivity.RESULT_CODE_OK) {
+                try {
+                    resultWaitingScan?.success(data?.getStringExtra(ScanActivity.BUNDLE_RESULT_KEY_SCANNED_IMAGE_PATH))
+                } catch (ex: Exception) {
+                    //nothing to do...
+                    Log.e("Error on write result", ex.message)
+                }
+            } else if (resultCode == ScanActivity.RESULT_CODE_ERROR) {
+                resultWaitingScan?.error("ERROR", "error on scan", null)
+            }
+        }
+        return true
     }
 }

@@ -69,7 +69,7 @@ class Pdfscanner {
       final String response = await _channel.invokeMethod('scan', {
         "scanSource": scanSource,
         "scannedImagesPath": scannedImagesPath,
-        "scannedImageName": scannedImageName ?? "scanned_${DateTime.now().toIso8601String()}.png"
+        "scannedImageName": scannedImageName ?? "scanned_${DateTime.now().millisecondsSinceEpoch.toString()}.png"
       });
       print("PDFScannerPlugin: result of scanning -> $response");
       return Future.value(response);

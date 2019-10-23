@@ -7,6 +7,7 @@ import android.provider.MediaStore
 
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.util.*
 
 /**
  * Created by jhansi on 05/04/15.
@@ -16,7 +17,7 @@ import java.io.IOException
 fun getUri(context: Context, bitmap: Bitmap): Uri {
     val bytes = ByteArrayOutputStream()
     bitmap.compress(Bitmap.CompressFormat.PNG, 100, bytes)
-    val path = MediaStore.Images.Media.insertImage(context.contentResolver, bitmap, "Title", "scanned by AREAseys.")
+    val path = MediaStore.Images.Media.insertImage(context.contentResolver, bitmap, "Title" + Date().time, "scanned by AREAseys.")
     return Uri.parse(path)
 }
 
