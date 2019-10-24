@@ -9,7 +9,7 @@ import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
-class PdfscannerPlugin : MethodCallHandler, PluginRegistry.ActivityResultListener {
+class ImagePdfScannerPlugin : MethodCallHandler, PluginRegistry.ActivityResultListener {
 
     companion object {
 
@@ -18,14 +18,14 @@ class PdfscannerPlugin : MethodCallHandler, PluginRegistry.ActivityResultListene
 
         @JvmStatic
         fun registerWith(registrar: Registrar) {
-            val channel = MethodChannel(registrar.messenger(), "pdfscanner")
-            channel.setMethodCallHandler(PdfscannerPlugin())
+            val channel = MethodChannel(registrar.messenger(), "com.areaseys.imagepdfscanner.plugin")
+            channel.setMethodCallHandler(ImagePdfScannerPlugin())
             this.registrar = registrar
         }
     }
 
-    private var registeredForOnActivityResult : Boolean = false
-    private var resultWaitingScan : Result? = null
+    private var registeredForOnActivityResult: Boolean = false
+    private var resultWaitingScan: Result? = null
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {

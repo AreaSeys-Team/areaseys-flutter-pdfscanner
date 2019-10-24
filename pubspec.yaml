@@ -1,8 +1,8 @@
 name: pdfscanner
-description: A new flutter plugin project.
-version: 0.0.1
-author:
-homepage:
+description: "Take any image file or photo, process with OpenCV/WeScan and generates PDF with android.graphics.pdf/PDFKit."
+version: 1.0.0
+author: Santiago Hoyos Zea for AREAseys
+homepage: https://github.com/santiihoyos/areaseys-flutter-pdfscanner
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  reorderables: ^0.2.12
 
 dev_dependencies:
   flutter_test:
@@ -26,7 +27,7 @@ flutter:
   # adding or updating assets for this project.
   plugin:
     androidPackage: com.areaseys.pdfscanner.pdfscanner
-    pluginClass: PdfscannerPlugin
+    pluginClass: ImagePdfScanner
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:
