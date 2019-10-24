@@ -24,7 +24,7 @@ fun createPdf(
     val pdfDoc = PdfDocument()
     val options = BitmapFactory.Options()
     options.inSampleSize = 3
-    var counter = 0;
+    var counter = 0
     for (imageForWrite in imagesPaths) {
         try {
             //dimens in points see: https://www.prepressure.com/library/paper-size

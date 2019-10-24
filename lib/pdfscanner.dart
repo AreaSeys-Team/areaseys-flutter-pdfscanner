@@ -10,6 +10,11 @@ import 'package:reorderables/reorderables.dart';
 ///
 ///https://www.prepressure.com/library/paper-size
 
+enum ImageSource {
+  CAMERA,
+  FILES,
+}
+
 enum PageSize {
   //ISO A paper sizes
   A0,
@@ -54,9 +59,12 @@ final _pageSizes = {
   PageSize.AMERICAN_ANSI_E: [2448, 1584],
 };
 
+final _imageSourceToValue = {
+  ImageSource.CAMERA: 4,
+  ImageSource.FILES: 5,
+};
+
 class ImagePdfScanner {
-  static const int CAMERA = 4;
-  static const int FILES = 5;
   static const MethodChannel _channel = const MethodChannel('com.areaseys.imagepdfscanner.plugin');
 
   /// Opens native plugin for scan, source can be specified using:
@@ -64,14 +72,14 @@ class ImagePdfScanner {
   /// Pdfscanner.FILES
   /// by default scanner source is CAMERA.
   static Future<String> scan({
-    final int scanSource = CAMERA,
-    final String scannedImagesPath = "/ImageScannerPlugin/scanned_images",
+    final ImageSource scanSource,
+    final String scannedImagesPath,
     final String scannedImageName,
   }) async {
     try {
       final String response = await _channel.invokeMethod('scan', {
-        "scanSource": scanSource,
-        "scannedImagesPath": scannedImagesPath,
+        "scanSource": scanSource != null ? _imageSourceToValue[scanSource] : _imageSourceToValue[ImageSource.CAMERA],
+        "scannedImagesPath": scannedImagesPath ?? "/ImageScannerPlugin/scanned_images",
         "scannedImageName": scannedImageName ?? "scanned_${DateTime.now().millisecondsSinceEpoch.toString()}"
       });
       print("PDFScannerPlugin: result of scanning -> $response");
@@ -114,13 +122,81 @@ class ImagePdfScanner {
   }
 }
 
+class PsfScannerScreenListener {
+  Function _onGetAllImages;
+  final Function(String imagePath) onImageScanned;
+  final Function(String pdfPath) onPdfGenerated;
+
+  PsfScannerScreenListener({
+    this.onImageScanned,
+    this.onPdfGenerated,
+  });
+
+  List<String> getScannedImagesPaths() => _onGetAllImages != null ? _onGetAllImages() : List<String>();
+}
+
 class PdfScannerScreen extends StatefulWidget {
+  final PsfScannerScreenListener listener;
+  final List<String> imagesPaths;
+  final String pdfName;
+  final String generatedPDFsPath;
+  final int marginLeft;
+  final int marginRight;
+  final int marginTop;
+  final int marginBottom;
+  final bool cleanScannedImagesWhenPdfGenerate;
+  final PageSize pageSize;
+  final ImageSource scanSource;
+  final String scannedImagesPath;
+  final String scannedImageName;
+  final Color primaryScreenColor;
+  final Color accentScreenColor;
+  final Color screenBackground;
+  final String screenTitle;
+  final String screenSubtitle;
+  final String generatePdfTitle;
+  final Icon iconButtonAddImage;
+  final Icon iconButtonGeneratePdf;
+
+  PdfScannerScreen({
+    this.imagesPaths,
+    this.pdfName,
+    this.generatedPDFsPath,
+    this.marginLeft,
+    this.marginRight,
+    this.marginTop,
+    this.marginBottom,
+    this.cleanScannedImagesWhenPdfGenerate,
+    this.pageSize,
+    this.scanSource = ImageSource.CAMERA,
+    this.scannedImagesPath,
+    this.scannedImageName,
+    this.screenBackground = Colors.white,
+    this.primaryScreenColor = Colors.blue,
+    this.accentScreenColor = Colors.blueAccent,
+    this.screenTitle = "AREAseys document scanner",
+    this.screenSubtitle = "Drag hover items for sort them.",
+    this.generatePdfTitle = "Generate PDF",
+    this.iconButtonAddImage,
+    this.iconButtonGeneratePdf,
+    this.listener,
+  });
+
   @override
   State<StatefulWidget> createState() => _PdfScannerScreen();
 }
 
 class _PdfScannerScreen extends State<PdfScannerScreen> {
-  final List<String> _processedImagesPaths = List(); //<-- returned by plugin.
+  List<String> _imagesPaths = List();
+
+  @override
+  void initState() {
+    _imagesPaths = widget.imagesPaths ?? List<String>();
+    if (widget.listener != null) {
+      widget.listener._onGetAllImages = () => _imagesPaths;
+    }
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +204,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
         alignment: WrapAlignment.start,
         spacing: 5,
         runSpacing: 10,
-        children: List<Widget>.generate(_processedImagesPaths.length, _buildPageItem),
+        children: List<Widget>.generate(_imagesPaths.length, _buildPageItem),
         minMainAxisCount: 3,
         onReorder: _onReorder,
         onNoReorder: (int index) {
@@ -140,118 +216,158 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
           debugPrint('${DateTime.now().toString().substring(5, 22)} reorder started: index:$index');
         });
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: widget.screenBackground,
+      bottomNavigationBar: BottomAppBar(
+        notchMargin: 10,
+        shape: CircularNotchedRectangle(),
+        color: widget.primaryScreenColor,
+        child: Container(
+          height: 50,
+          child: Row(
+            children: <Widget>[
+              MaterialButton(
+                child: Row(
+                  children: <Widget>[
+                    widget.iconButtonGeneratePdf != null
+                        ? Container(
+                            child: widget.iconButtonGeneratePdf,
+                            margin: const EdgeInsets.only(right: 6),
+                          )
+                        : Container(),
+                    Text(widget.generatePdfTitle, style: TextStyle(color: Colors.white)),
+                  ],
+                ),
+                onPressed: () => ImagePdfScanner.generatePdf(
+                  imagesPaths: _imagesPaths,
+                  pdfName: widget.pdfName ?? "pdf_${DateTime.now().millisecondsSinceEpoch}.pdf",
+                  marginTop: widget.marginTop,
+                  marginBottom: widget.marginBottom,
+                  marginLeft: widget.marginLeft,
+                  marginRight: widget.marginRight,
+                  pageSize: widget.pageSize,
+                ).then((result) {
+                  debugPrint("PdfScannerPlugin: path of generated PDF -> " + result);
+                }),
+                elevation: 0,
+                color: widget.primaryScreenColor,
+              )
+            ],
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: _launchScannerPlugin,
-        child: Icon(Icons.add),
+        child: widget.iconButtonAddImage ?? Icon(Icons.add),
       ),
       appBar: AppBar(
-        title: const Text('Plugin Image Scanner by AreaSeys'),
+        title: Text(widget.screenTitle),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Container(
-              margin: EdgeInsets.only(
-                top: 16,
-                left: 16,
-              ),
-              child: Text(
-                "Long press and drag for reorder pages...",
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Container(
+            margin: EdgeInsets.only(
+              top: 16,
+              left: 16,
             ),
-            Container(
-              margin: EdgeInsets.only(
-                top: 40,
-              ),
-              alignment: Alignment.center,
-              child: wrap,
+            child: Text(
+              widget.screenTitle,
+              style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
             ),
-            MaterialButton(
-              child: Text("Generate PDF", style: TextStyle(color: Colors.white)),
-              onPressed: () => ImagePdfScanner.generatePdf(
-                imagesPaths: _processedImagesPaths,
-                pdfName: "testPdf_${DateTime.now().millisecondsSinceEpoch}.pdf",
-                marginTop: 50,
-                marginBottom: 50,
-                marginLeft: 40,
-                marginRight: 40,
-                pageSize: PageSize.A4,
-              ).then((result) {
-                debugPrint("PdfScannerPlugin: path of generated PDF -> " + result);
-              }),
-              color: Colors.blueAccent,
-            ),
-          ],
-        ),
+          ),
+          Expanded(
+            child: _imagesPaths.length > 0
+                ? SingleChildScrollView(
+                    child: Container(
+                      margin: EdgeInsets.only(top: 40),
+                      alignment: Alignment.center,
+                      child: wrap,
+                    ),
+                  )
+                : Container(
+                    padding: EdgeInsets.all(30),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Icon(Icons.scanner, color: Colors.grey[300], size: 100),
+                        Text(
+                          "No scanned pages, please tap in add(+) button to start scan.",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey[300]),
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+        ],
       ),
     );
   }
 
   void _launchScannerPlugin() async {
-    int selectedSource = ImagePdfScanner.CAMERA;
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        return SimpleDialog(
-          title: Text("Select image source"),
-          children: <Widget>[
-            SimpleDialogOption(
-              child: Row(
-                children: <Widget>[
-                  Icon(Icons.camera_alt),
-                  Container(width: 5),
-                  Expanded(
-                    child: Text("Take a new photo"),
-                  ),
-                ],
+    var imageSource = widget.scanSource ?? ImageSource.CAMERA;
+    if (widget.scanSource == null) {
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) {
+          return SimpleDialog(
+            title: Text("Select image source"),
+            children: <Widget>[
+              SimpleDialogOption(
+                child: Row(
+                  children: <Widget>[
+                    Icon(Icons.camera_alt),
+                    Container(width: 5),
+                    Expanded(
+                      child: Text("Take a new photo"),
+                    ),
+                  ],
+                ),
+                onPressed: () {
+                  imageSource = widget.scanSource;
+                  Navigator.of(context).pop();
+                },
               ),
-              onPressed: () {
-                selectedSource = ImagePdfScanner.CAMERA;
-                Navigator.of(context).pop();
-              },
-            ),
-            Divider(
-              indent: 10,
-              endIndent: 10,
-            ),
-            SimpleDialogOption(
-              child: Row(
-                children: <Widget>[
-                  Icon(Icons.attach_file),
-                  Container(width: 5),
-                  Expanded(
-                    child: Text("Select image from files"),
-                  ),
-                ],
+              Divider(
+                indent: 10,
+                endIndent: 10,
               ),
-              onPressed: () {
-                selectedSource = ImagePdfScanner.FILES;
-                Navigator.of(context).pop();
-              },
-            )
-          ],
-        );
-      },
-    );
-    ImagePdfScanner.scan(scanSource: selectedSource)
+              SimpleDialogOption(
+                child: Row(
+                  children: <Widget>[
+                    Icon(Icons.attach_file),
+                    Container(width: 5),
+                    Expanded(
+                      child: Text("Select image from files"),
+                    ),
+                  ],
+                ),
+                onPressed: () {
+                  imageSource = ImageSource.FILES;
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        },
+      );
+    }
+    ImagePdfScanner.scan(
+      scanSource: imageSource,
+      scannedImagesPath: widget.scannedImagesPath,
+      scannedImageName: widget.scannedImageName,
+    )
         .then((final String path) => setState(() => setState(() {
-              print("NEW PATH: $path");
-              _processedImagesPaths.add(path);
-              //_pageItems.add(_buildPageItem(_processedImagesPaths.length - 1));
+              _imagesPaths.add(path);
             })))
         .catchError(
           (final error) => showDialog(
             context: context,
             builder: (final ctx) => AlertDialog(
               title: Text("Error!"),
-              content: Text(error),
+              content: Text(error is String ? error : ""),
             ),
           ),
         );
@@ -259,8 +375,8 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
 
   void _onReorder(final int oldIndex, final int newIndex) {
     setState(() {
-      final String deleted = _processedImagesPaths.removeAt(oldIndex);
-      _processedImagesPaths.insert(newIndex, deleted);
+      final String deleted = _imagesPaths.removeAt(oldIndex);
+      _imagesPaths.insert(newIndex, deleted);
     });
   }
 
@@ -291,7 +407,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
                     margin: EdgeInsets.all(width / 10),
                     padding: EdgeInsets.all(width / 20),
                     child: Image.file(
-                      File(_processedImagesPaths[index]),
+                      File(_imagesPaths[index]),
                       fit: BoxFit.cover,
                     ),
                     alignment: Alignment.center,
@@ -305,7 +421,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
                     child: InkWell(
                       onTap: () {
                         setState(() {
-                          _processedImagesPaths.removeAt(index);
+                          _imagesPaths.removeAt(index);
                         });
                       },
                       child: Container(
