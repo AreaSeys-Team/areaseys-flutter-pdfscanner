@@ -258,8 +258,6 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
         }
     }
 
-
-
     private Bitmap getBitmap(Uri selectedimg) throws IOException {
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 3;
@@ -271,7 +269,7 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
 
     private void clearTempImages() {
         try {
-            final String imagePath = getIntent().getStringExtra(BUNDLE_EXTRA_KEY_SCANNED_IMAGES_PATH);
+            final String imagePath = Environment.getExternalStorageDirectory() + getIntent().getStringExtra(BUNDLE_EXTRA_KEY_SCANNED_IMAGES_PATH);
             File tempFolder = new File(imagePath);
             for (File f : tempFolder.listFiles())
                 f.delete();
