@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.util.AttributeSet;
+import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,9 +13,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by jhansi on 28/03/15.
@@ -92,7 +91,7 @@ public class PolygonView extends FrameLayout {
         paint.setAntiAlias(true);
     }
 
-    public Map<Integer, PointF> getPoints() {
+    public SparseArray<PointF> getPoints() {
 
         List<PointF> points = new ArrayList<PointF>();
         points.add(new PointF(pointer1.getX(), pointer1.getY()));
@@ -103,7 +102,7 @@ public class PolygonView extends FrameLayout {
         return getOrderedPoints(points);
     }
 
-    public Map<Integer, PointF> getOrderedPoints(List<PointF> points) {
+    public SparseArray<PointF> getOrderedPoints(List<PointF> points) {
 
         PointF centerPoint = new PointF();
         int size = points.size();
@@ -111,16 +110,19 @@ public class PolygonView extends FrameLayout {
             centerPoint.x += pointF.x / size;
             centerPoint.y += pointF.y / size;
         }
-        Map<Integer, PointF> orderedPoints = new HashMap<>();
+        SparseArray<PointF> orderedPoints = new SparseArray<>();
         for (PointF pointF : points) {
             int index = -1;
             if (pointF.x < centerPoint.x && pointF.y < centerPoint.y) {
                 index = 0;
-            } else if (pointF.x > centerPoint.x && pointF.y < centerPoint.y) {
+            }
+            else if (pointF.x > centerPoint.x && pointF.y < centerPoint.y) {
                 index = 1;
-            } else if (pointF.x < centerPoint.x && pointF.y > centerPoint.y) {
+            }
+            else if (pointF.x < centerPoint.x && pointF.y > centerPoint.y) {
                 index = 2;
-            } else if (pointF.x > centerPoint.x && pointF.y > centerPoint.y) {
+            }
+            else if (pointF.x > centerPoint.x && pointF.y > centerPoint.y) {
                 index = 3;
             }
             orderedPoints.put(index, pointF);
@@ -128,13 +130,13 @@ public class PolygonView extends FrameLayout {
         return orderedPoints;
     }
 
-    public void setPoints(Map<Integer, PointF> pointFMap) {
+    public void setPoints(SparseArray<PointF> pointFMap) {
         if (pointFMap.size() == 4) {
             setPointsCoordinates(pointFMap);
         }
     }
 
-    private void setPointsCoordinates(Map<Integer, PointF> pointFMap) {
+    private void setPointsCoordinates(SparseArray<PointF> pointFMap) {
         pointer1.setX(pointFMap.get(0).x);
         pointer1.setY(pointFMap.get(0).y);
 
@@ -151,10 +153,26 @@ public class PolygonView extends FrameLayout {
     @Override
     protected void dispatchDraw(Canvas canvas) {
         super.dispatchDraw(canvas);
-        canvas.drawLine(pointer1.getX() + (pointer1.getWidth() / 2), pointer1.getY() + (pointer1.getHeight() / 2), pointer3.getX() + (pointer3.getWidth() / 2), pointer3.getY() + (pointer3.getHeight() / 2), paint);
-        canvas.drawLine(pointer1.getX() + (pointer1.getWidth() / 2), pointer1.getY() + (pointer1.getHeight() / 2), pointer2.getX() + (pointer2.getWidth() / 2), pointer2.getY() + (pointer2.getHeight() / 2), paint);
-        canvas.drawLine(pointer2.getX() + (pointer2.getWidth() / 2), pointer2.getY() + (pointer2.getHeight() / 2), pointer4.getX() + (pointer4.getWidth() / 2), pointer4.getY() + (pointer4.getHeight() / 2), paint);
-        canvas.drawLine(pointer3.getX() + (pointer3.getWidth() / 2), pointer3.getY() + (pointer3.getHeight() / 2), pointer4.getX() + (pointer4.getWidth() / 2), pointer4.getY() + (pointer4.getHeight() / 2), paint);
+        canvas.drawLine(pointer1.getX() + (pointer1.getWidth() / 2),
+                        pointer1.getY() + (pointer1.getHeight() / 2),
+                        pointer3.getX() + (pointer3.getWidth() / 2),
+                        pointer3.getY() + (pointer3.getHeight() / 2),
+                        paint);
+        canvas.drawLine(pointer1.getX() + (pointer1.getWidth() / 2),
+                        pointer1.getY() + (pointer1.getHeight() / 2),
+                        pointer2.getX() + (pointer2.getWidth() / 2),
+                        pointer2.getY() + (pointer2.getHeight() / 2),
+                        paint);
+        canvas.drawLine(pointer2.getX() + (pointer2.getWidth() / 2),
+                        pointer2.getY() + (pointer2.getHeight() / 2),
+                        pointer4.getX() + (pointer4.getWidth() / 2),
+                        pointer4.getY() + (pointer4.getHeight() / 2),
+                        paint);
+        canvas.drawLine(pointer3.getX() + (pointer3.getWidth() / 2),
+                        pointer3.getY() + (pointer3.getHeight() / 2),
+                        pointer4.getX() + (pointer4.getWidth() / 2),
+                        pointer4.getY() + (pointer4.getHeight() / 2),
+                        paint);
         midPointer13.setX(pointer3.getX() - ((pointer3.getX() - pointer1.getX()) / 2));
         midPointer13.setY(pointer3.getY() - ((pointer3.getY() - pointer1.getY()) / 2));
         midPointer24.setX(pointer4.getX() - ((pointer4.getX() - pointer2.getX()) / 2));
@@ -207,7 +225,8 @@ public class PolygonView extends FrameLayout {
                             StartPT = new PointF(v.getX(), v.getY());
                             mainPointer1.setY((int) (mainPointer1.getY() + mv.y));
                         }
-                    } else {
+                    }
+                    else {
                         if ((mainPointer2.getX() + mv.x + v.getWidth() < polygonView.getWidth()) && (mainPointer2.getX() + mv.x > 0)) {
                             v.setX((int) (StartPT.x + mv.x));
                             StartPT = new PointF(v.getX(), v.getY());
@@ -230,7 +249,8 @@ public class PolygonView extends FrameLayout {
                     int color = 0;
                     if (isValidShape(getPoints())) {
                         color = getResources().getColor(R.color.blue);
-                    } else {
+                    }
+                    else {
                         color = getResources().getColor(R.color.orange);
                     }
                     paint.setColor(color);
@@ -248,7 +268,7 @@ public class PolygonView extends FrameLayout {
         return super.onTouchEvent(event);
     }
 
-    public boolean isValidShape(Map<Integer, PointF> pointFMap) {
+    public boolean isValidShape(SparseArray<PointF> pointFMap) {
         return pointFMap.size() == 4;
     }
 
@@ -278,7 +298,8 @@ public class PolygonView extends FrameLayout {
                     int color = 0;
                     if (isValidShape(getPoints())) {
                         color = getResources().getColor(R.color.blue);
-                    } else {
+                    }
+                    else {
                         color = getResources().getColor(R.color.orange);
                     }
                     paint.setColor(color);
@@ -289,8 +310,5 @@ public class PolygonView extends FrameLayout {
             polygonView.invalidate();
             return true;
         }
-
     }
-
-
 }

@@ -2,7 +2,6 @@ package com.areaseys.pdfscanner.pdfscanner;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.FragmentTransaction;
 import android.content.ComponentCallbacks2;
 import android.content.Intent;
@@ -13,13 +12,13 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,7 +32,16 @@ import androidx.core.content.FileProvider;
  */
 public class ScanActivity extends AppCompatActivity implements IScanner, ComponentCallbacks2 {
 
+    public static final String BUNDLE_EXTRA_KEY_SCAN_SOURCE = "scanSource";
+    public static final String BUNDLE_EXTRA_KEY_SCANNED_IMAGES_PATH = "scannedImagesPath";
+    public static final String BUNDLE_EXTRA_KEY_SCANNED_IMAGE_NAME = "scannedImageName";
+    public static final String BUNDLE_RESULT_KEY_SCANNED_IMAGE_PATH = "scannedImagePath";
+    public static final int BUNDLE_EXTRA_VALUE_OPEN_CAMERA = 4;
+    public static final int BUNDLE_EXTRA_VALUE_OPEN_MEDIA_FILE = 5;
+
     private final int REQUEST_PERMISSIONS_CODE = 1234;
+    private final int REQUEST_CODE_PICK_FILE = 4324;
+    private final int REQUEST_CODE_START_CAMERA = 4323;
     private Uri fileUri;
 
     static {
@@ -57,14 +65,7 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
                     (grantResults[1] != PackageManager.PERMISSION_GRANTED) || //<-- CAMERA
                     (grantResults[2] != PackageManager.PERMISSION_GRANTED)    //<-- WRITE STORAGE
             ) {
-                if (PdfscannerPlugin.result != null) {
-                    try {
-                        PdfscannerPlugin.result.error("-2", "", null);
-                    }
-                    catch (Exception ex) {
-                        //do nothing...
-                    }
-                }
+                setResult(Activity.RESULT_CANCELED);
                 this.finish();
             }
             else {
@@ -74,10 +75,12 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
     }
 
     @Override
-    public void onBitmapSelect(Uri uri) {
-        ScanFragment fragment = new ScanFragment();
-        Bundle bundle = new Bundle();
-        bundle.putParcelable(ScanConstants.SELECTED_BITMAP, uri);
+    public void onBitmapSelect(final Uri uri) {
+        final ScanFragment fragment = new ScanFragment();
+        final Bundle bundle = new Bundle();
+        bundle.putParcelable(ScanFragment.BUNDLE_EXTRA_KEY_SELECTED_BITMAP, uri);
+        bundle.putString(ResultFragment.BUNDLE_EXTRA_KEY_IMAGE_NAME, Objects.requireNonNull(getIntent().getExtras()).getString(BUNDLE_EXTRA_KEY_SCANNED_IMAGE_NAME));
+        bundle.putString(ResultFragment.BUNDLE_EXTRA_KEY_IMAGES_PATH, Objects.requireNonNull(getIntent().getExtras()).getString(BUNDLE_EXTRA_KEY_SCANNED_IMAGES_PATH));
         fragment.setArguments(bundle);
         android.app.FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -87,10 +90,12 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
     }
 
     @Override
-    public void onScanFinish(Uri uri) {
+    public void onScanFinish(final Uri uri) {
         ResultFragment fragment = new ResultFragment();
         Bundle bundle = new Bundle();
-        bundle.putParcelable(ScanConstants.SCANNED_RESULT, uri);
+        bundle.putParcelable(ResultFragment.BUNDLE_EXTRA_KEY_SCANNED_RESULT, uri);
+        bundle.putString(ResultFragment.BUNDLE_EXTRA_KEY_IMAGE_NAME, Objects.requireNonNull(getIntent().getExtras()).getString(BUNDLE_EXTRA_KEY_SCANNED_IMAGE_NAME));
+        bundle.putString(ResultFragment.BUNDLE_EXTRA_KEY_IMAGES_PATH, Objects.requireNonNull(getIntent().getExtras()).getString(BUNDLE_EXTRA_KEY_SCANNED_IMAGES_PATH));
         fragment.setArguments(bundle);
         android.app.FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -100,68 +105,21 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
     }
 
     @Override
-    public void onTrimMemory(int level) {
-        switch (level) {
-            case ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN:
-      /*
-         Release any UI objects that currently hold memory.
-
-         The user interface has moved to the background.
-      */
-                break;
-            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE:
-            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW:
-            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL:
-      /*
-         Release any memory that your app doesn't need to run.
-
-         The device is running low on memory while the app is running.
-         The event raised indicates the severity of the memory-related event.
-         If the event is TRIM_MEMORY_RUNNING_CRITICAL, then the system will
-         begin killing background processes.
-      */
-                break;
-            case ComponentCallbacks2.TRIM_MEMORY_BACKGROUND:
-            case ComponentCallbacks2.TRIM_MEMORY_MODERATE:
-            case ComponentCallbacks2.TRIM_MEMORY_COMPLETE:
-      /*
-         Release as much memory as the process can.
-
-         The app is on the LRU list and the system is running low on memory.
-         The event raised indicates where the app sits within the LRU list.
-         If the event is TRIM_MEMORY_COMPLETE, the process will be one of
-         the first to be terminated.
-      */
-                /* new AlertDialog.Builder(this)
-                        .setTitle(R.string.low_memory)
-                        .setMessage(R.string.low_memory_message)
-                        .create()
-                        .show();  */
-                break;
-            default:
-      /*
-        Release any non-critical data structures.
-
-        The app received an unrecognized memory level value
-        from the system. Treat this as a generic low-memory message.
-      */
-                break;
-        }
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Bitmap bitmap = null;
+        Uri uri = null;
         if (resultCode == Activity.RESULT_OK) {
             try {
                 switch (requestCode) {
-                    case ScanConstants.START_CAMERA_REQUEST_CODE:
-                        bitmap = getBitmap(fileUri);
+                    case REQUEST_CODE_START_CAMERA:
+                        bitmap = UtilsKt.getBitmap(this, fileUri);
+                        uri = fileUri;
                         break;
 
-                    case ScanConstants.PICKFILE_REQUEST_CODE:
-                        bitmap = getBitmap(data.getData());
+                    case REQUEST_CODE_PICK_FILE:
+                        bitmap = UtilsKt.getBitmap(this, data.getData());
+                        uri = data.getData();
                         break;
                 }
             }
@@ -173,7 +131,7 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
             finish();
         }
         if (bitmap != null) {
-            postImagePick(bitmap);
+            postImagePick(bitmap, uri);
         }
     }
 
@@ -191,37 +149,39 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("image/*");
-        startActivityForResult(intent, ScanConstants.PICKFILE_REQUEST_CODE);
+        startActivityForResult(intent, REQUEST_CODE_PICK_FILE);
     }
 
-    public void openCamera() {
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        File file = createImageFile();
-        boolean isDirectoryCreated = file.getParentFile().mkdirs();
-        Log.d("", "openCamera: isDirectoryCreated: " + isDirectoryCreated);
+    public final void openCamera() {
+        final Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        final File file = createImageFile();
+        boolean make = file.getParentFile().mkdirs();
+        if (!make) {
+            Log.e("ImagePdfScannerPlugin", "Error on create temporal for host temporal image file.");
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Uri tempFileUri = FileProvider.getUriForFile(getApplicationContext(), "com.scanlibrary.provider", file);
+            final Uri tempFileUri = FileProvider.getUriForFile(getApplicationContext(), "com.areaseys_authority", file);
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempFileUri);
         }
         else {
-            Uri tempFileUri = Uri.fromFile(file);
+            final Uri tempFileUri = Uri.fromFile(file);
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempFileUri);
         }
-        startActivityForResult(cameraIntent, ScanConstants.START_CAMERA_REQUEST_CODE);
+        startActivityForResult(cameraIntent, REQUEST_CODE_START_CAMERA);
     }
 
-    protected void postImagePick(Bitmap bitmap) {
-        Uri uri = Utils.getUri(this, bitmap);
+    protected void postImagePick(final Bitmap bitmap, final Uri uri) {
+        //Uri uri = UtilsKt.getUri(this, bitmap);
         bitmap.recycle();
         onBitmapSelect(uri);
     }
 
     private File createImageFile() {
-        clearTempImages();
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new
-                                                                                  Date());
-        File file = new File(ScanConstants.IMAGE_PATH, "IMG_" + timeStamp +
-                                                       ".jpg");
+        //clearTempImages();
+        File file = new File(
+                Environment.getExternalStorageDirectory().getPath() + getIntent().getStringExtra(BUNDLE_EXTRA_KEY_SCANNED_IMAGES_PATH),
+                getIntent().getStringExtra(BUNDLE_EXTRA_KEY_SCANNED_IMAGE_NAME) + "_original.png"
+        );
         fileUri = Uri.fromFile(file);
         return file;
     }
@@ -246,10 +206,10 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
 
     private void launch() {
         if (getIntent() != null && getIntent().getExtras() != null) {
-            if (getIntent().getExtras().getInt("SOURCE") == ScanConstants.OPEN_CAMERA) {
+            if (getIntent().getExtras().getInt(BUNDLE_EXTRA_KEY_SCAN_SOURCE) == BUNDLE_EXTRA_VALUE_OPEN_CAMERA) {
                 openCamera();
             }
-            else if (getIntent().getExtras().getInt("SOURCE") == ScanConstants.OPEN_MEDIA) {
+            else if (getIntent().getExtras().getInt(BUNDLE_EXTRA_KEY_SCAN_SOURCE) == BUNDLE_EXTRA_VALUE_OPEN_MEDIA_FILE) {
                 openMediaContent();
             }
         }
@@ -258,20 +218,16 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
         }
     }
 
-    private Bitmap getBitmap(Uri selectedimg) throws IOException {
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = 3;
-        AssetFileDescriptor fileDescriptor;
-        fileDescriptor = getContentResolver().openAssetFileDescriptor(selectedimg, "r");
-        final Bitmap original = BitmapFactory.decodeFileDescriptor(fileDescriptor.getFileDescriptor(), null, options);
-        return original;
-    }
-
     private void clearTempImages() {
         try {
-            File tempFolder = new File(ScanConstants.IMAGE_PATH);
-            for (File f : tempFolder.listFiles())
-                f.delete();
+            final String imagePath = Environment.getExternalStorageDirectory() + getIntent().getStringExtra(BUNDLE_EXTRA_KEY_SCANNED_IMAGES_PATH);
+            File tempFolder = new File(imagePath);
+            for (File f : tempFolder.listFiles()) {
+                boolean deleted = f.delete();
+                if (!deleted) {
+                    Log.w("ImagePdfScannerPlugin", "Error on delete temporal file: " + tempFolder.getPath());
+                }
+            }
         }
         catch (Exception e) {
             e.printStackTrace();
