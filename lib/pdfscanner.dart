@@ -72,7 +72,7 @@ class ImagePdfScanner {
       final String response = await _channel.invokeMethod('scan', {
         "scanSource": scanSource,
         "scannedImagesPath": scannedImagesPath,
-        "scannedImageName": scannedImageName ?? "scanned_${DateTime.now().millisecondsSinceEpoch.toString()}.png"
+        "scannedImageName": scannedImageName ?? "scanned_${DateTime.now().millisecondsSinceEpoch.toString()}"
       });
       print("PDFScannerPlugin: result of scanning -> $response");
       return Future.value(response);
@@ -176,7 +176,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
               child: Text("Generate PDF", style: TextStyle(color: Colors.white)),
               onPressed: () => ImagePdfScanner.generatePdf(
                 imagesPaths: _processedImagesPaths,
-                pdfName: "PDF_name1.pdf",
+                pdfName: "testPdf_${DateTime.now().millisecondsSinceEpoch}.pdf",
                 marginTop: 50,
                 marginBottom: 50,
                 marginLeft: 40,

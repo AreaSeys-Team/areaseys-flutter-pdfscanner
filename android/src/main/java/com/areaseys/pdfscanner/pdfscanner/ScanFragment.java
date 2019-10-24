@@ -1,5 +1,6 @@
 package com.areaseys.pdfscanner.pdfscanner;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -12,6 +13,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,11 +22,11 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by jhansi on 29/03/15.
@@ -33,6 +35,8 @@ import java.util.Map;
 public class ScanFragment extends Fragment {
 
     public static final String BUNDLE_EXTRA_KEY_SELECTED_BITMAP = "selectedBitmap";
+    public static final String BUNDLE_EXTRA_KEY_IMAGES_PATH = "scannedImagesPath";
+    public static final String BUNDLE_EXTRA_KEY_IMAGE_NAME = "scannedImageName";
 
     private ImageView sourceImageView;
     private FrameLayout sourceFrame;
@@ -52,6 +56,7 @@ public class ScanFragment extends Fragment {
     }
 
     @Override
+    @SuppressLint("InflateParams")
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.scan_fragment_layout, null);
         init();
@@ -76,27 +81,24 @@ public class ScanFragment extends Fragment {
     }
 
     private Bitmap getBitmap() {
-        Uri uri = getUri();
         try {
-            Bitmap bitmap = UtilsKt.getBitmap(getActivity(), uri);
-            getActivity().getContentResolver().delete(uri, null, null);
+            final Uri uri = getArguments().getParcelable(BUNDLE_EXTRA_KEY_SELECTED_BITMAP);
+            assert uri != null;
+            final Bitmap bitmap = UtilsKt.getBitmap(getActivity(), uri);
+            new File(uri.getPath()).deleteOnExit();
             return bitmap;
         }
         catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
-        return null;
-    }
-
-    private Uri getUri() {
-        return getArguments().getParcelable(BUNDLE_EXTRA_KEY_SELECTED_BITMAP);
     }
 
     private void setBitmap(Bitmap original) {
         Bitmap scaledBitmap = scaledBitmap(original, sourceFrame.getWidth(), sourceFrame.getHeight());
         sourceImageView.setImageBitmap(scaledBitmap);
         Bitmap tempBitmap = ((BitmapDrawable) sourceImageView.getDrawable()).getBitmap();
-        Map<Integer, PointF> pointFs = getEdgePoints(tempBitmap);
+        SparseArray<PointF> pointFs = getEdgePoints(tempBitmap);
         polygonView.setPoints(pointFs);
         polygonView.setVisibility(View.VISIBLE);
         int padding = (int) getResources().getDimension(R.dimen.scanPadding);
@@ -105,10 +107,9 @@ public class ScanFragment extends Fragment {
         polygonView.setLayoutParams(layoutParams);
     }
 
-    private Map<Integer, PointF> getEdgePoints(Bitmap tempBitmap) {
+    private SparseArray<PointF> getEdgePoints(Bitmap tempBitmap) {
         List<PointF> pointFs = getContourEdgePoints(tempBitmap);
-        Map<Integer, PointF> orderedPoints = orderedValidEdgePoints(tempBitmap, pointFs);
-        return orderedPoints;
+        return orderedValidEdgePoints(tempBitmap, pointFs);
     }
 
     private List<PointF> getContourEdgePoints(Bitmap tempBitmap) {
@@ -131,8 +132,8 @@ public class ScanFragment extends Fragment {
         return pointFs;
     }
 
-    private Map<Integer, PointF> getOutlinePoints(Bitmap tempBitmap) {
-        Map<Integer, PointF> outlinePoints = new HashMap<>();
+    private SparseArray<PointF> getOutlinePoints(Bitmap tempBitmap) {
+        SparseArray<PointF> outlinePoints = new SparseArray<>();
         outlinePoints.put(0, new PointF(0, 0));
         outlinePoints.put(1, new PointF(tempBitmap.getWidth(), 0));
         outlinePoints.put(2, new PointF(0, tempBitmap.getHeight()));
@@ -140,8 +141,8 @@ public class ScanFragment extends Fragment {
         return outlinePoints;
     }
 
-    private Map<Integer, PointF> orderedValidEdgePoints(Bitmap tempBitmap, List<PointF> pointFs) {
-        Map<Integer, PointF> orderedPoints = polygonView.getOrderedPoints(pointFs);
+    private SparseArray<PointF> orderedValidEdgePoints(Bitmap tempBitmap, List<PointF> pointFs) {
+        SparseArray<PointF> orderedPoints = polygonView.getOrderedPoints(pointFs);
         if (!polygonView.isValidShape(orderedPoints)) {
             orderedPoints = getOutlinePoints(tempBitmap);
         }
@@ -151,7 +152,7 @@ public class ScanFragment extends Fragment {
     private class ScanButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            Map<Integer, PointF> points = polygonView.getPoints();
+            SparseArray<PointF> points = polygonView.getPoints();
             if (isScanPointsValid(points)) {
                 new ScanAsyncTask(points).execute();
             }
@@ -167,7 +168,7 @@ public class ScanFragment extends Fragment {
         fragment.show(fm, SingleButtonDialogFragment.class.toString());
     }
 
-    private boolean isScanPointsValid(Map<Integer, PointF> points) {
+    private boolean isScanPointsValid(SparseArray<PointF> points) {
         return points.size() == 4;
     }
 
@@ -177,9 +178,7 @@ public class ScanFragment extends Fragment {
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
     }
 
-    private Bitmap getScannedBitmap(Bitmap original, Map<Integer, PointF> points) {
-        //int width = original.getWidth();
-        //int height = original.getHeight();
+    private Bitmap getScannedBitmap(Bitmap original, SparseArray<PointF> points) {
         float xRatio = (float) original.getWidth() / sourceImageView.getWidth();
         float yRatio = (float) original.getHeight() / sourceImageView.getHeight();
 
@@ -191,16 +190,16 @@ public class ScanFragment extends Fragment {
         float y2 = (points.get(1).y) * yRatio;
         float y3 = (points.get(2).y) * yRatio;
         float y4 = (points.get(3).y) * yRatio;
-        Log.d("", "POints(" + x1 + "," + y1 + ")(" + x2 + "," + y2 + ")(" + x3 + "," + y3 + ")(" + x4 + "," + y4 + ")");
-        Bitmap _bitmap = ((ScanActivity) getActivity()).getScannedBitmap(original, x1, y1, x2, y2, x3, y3, x4, y4);
-        return _bitmap;
+        Log.d("", "Points(" + x1 + "," + y1 + ")(" + x2 + "," + y2 + ")(" + x3 + "," + y3 + ")(" + x4 + "," + y4 + ")");
+        return ((ScanActivity) getActivity()).getScannedBitmap(original, x1, y1, x2, y2, x3, y3, x4, y4);
     }
 
+    @SuppressLint("StaticFieldLeak")
     private class ScanAsyncTask extends AsyncTask<Void, Void, Bitmap> {
 
-        private Map<Integer, PointF> points;
+        private SparseArray<PointF> points;
 
-        public ScanAsyncTask(Map<Integer, PointF> points) {
+        ScanAsyncTask(SparseArray<PointF> points) {
             this.points = points;
         }
 
@@ -213,7 +212,11 @@ public class ScanFragment extends Fragment {
         @Override
         protected Bitmap doInBackground(Void... params) {
             Bitmap bitmap = getScannedBitmap(original, points);
-            Uri uri = UtilsKt.getUri(getActivity(), bitmap);
+            final Uri uri = Uri.fromFile(new File(UtilsKt.saveImage(
+                    Objects.requireNonNull(getArguments().getString(BUNDLE_EXTRA_KEY_IMAGES_PATH)),
+                    getArguments().getString(BUNDLE_EXTRA_KEY_IMAGE_NAME) + "_scanned",
+                    bitmap
+            )));
             scanner.onScanFinish(uri);
             return bitmap;
         }

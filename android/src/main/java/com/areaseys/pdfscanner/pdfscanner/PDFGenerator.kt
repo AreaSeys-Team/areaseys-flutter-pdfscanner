@@ -1,12 +1,12 @@
 package com.areaseys.pdfscanner.pdfscanner
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Rect
 import android.graphics.pdf.PdfDocument
 import android.os.Environment
 import android.util.Log
-import java.io.File
-import java.io.FileOutputStream
+import java.io.*
 
 
 fun createPdf(
@@ -22,13 +22,19 @@ fun createPdf(
     pageHeight: Int
 ): String {
     val pdfDoc = PdfDocument()
+    val options = BitmapFactory.Options()
+    options.inSampleSize = 3
+    var counter = 0;
     for (imageForWrite in imagesPaths) {
         try {
             //dimens in points see: https://www.prepressure.com/library/paper-size
             val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, imagesPaths.size)
             val page = pdfDoc.startPage(pageInfo.create())
             val pageCanvas = page.canvas
-            val bitmap = BitmapFactory.decodeFile(imageForWrite)
+            var bitmap = BitmapFactory.decodeFile(imageForWrite, options)
+            val compressed = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90,  compressed)
+            bitmap = BitmapFactory.decodeStream(ByteArrayInputStream(compressed.toByteArray()))
             pageCanvas.drawBitmap(
                 bitmap,
                 Rect(0, 0, bitmap.width, bitmap.height),
@@ -39,6 +45,7 @@ fun createPdf(
         } catch (ex: Exception) {
             Log.e("PDFGenerator plugin: ", "error on generate page for $imageForWrite path.")
         }
+        counter++
     }
     val filePath = File(Environment.getExternalStorageDirectory().toString() + generatedPDFsPath)
     if (!filePath.exists()) {

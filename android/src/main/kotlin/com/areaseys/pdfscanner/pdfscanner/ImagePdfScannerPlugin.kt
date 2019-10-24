@@ -1,5 +1,6 @@
 package com.areaseys.pdfscanner.pdfscanner
 
+import android.app.Activity
 import android.content.Intent
 import android.util.Log
 import io.flutter.plugin.common.MethodCall
@@ -12,7 +13,6 @@ import io.flutter.plugin.common.PluginRegistry.Registrar
 class ImagePdfScannerPlugin : MethodCallHandler, PluginRegistry.ActivityResultListener {
 
     companion object {
-
         private const val REQUEST_CODE_SCAN = 1
         private lateinit var registrar: Registrar
 
@@ -27,26 +27,26 @@ class ImagePdfScannerPlugin : MethodCallHandler, PluginRegistry.ActivityResultLi
     private var registeredForOnActivityResult: Boolean = false
     private var resultWaitingScan: Result? = null
 
-    override fun onMethodCall(call: MethodCall, result: Result) {
-        when (call.method) {
+    override fun onMethodCall(call: MethodCall, result: Result) = with(call) {
+        when (method) {
             "scan" -> scan(
                 result = result,
-                scanSource = call.argument<Int>("scanSource") as Int,
-                scannedImagesPath = call.argument<String>("scannedImagesPath") as String,
-                scannedImageName = call.argument<String>("scannedImageName") as String
+                scanSource = argument<Int>("scanSource") as Int,
+                scannedImagesPath = argument<String>("scannedImagesPath") as String,
+                scannedImageName = argument<String>("scannedImageName") as String
             )
             "generatePdf" -> generatePDF(
                 result = result,
-                imagesPaths = call.argument<List<String>>("imagesPaths") as List<String>,
-                pdfName = call.argument<String>("pdfName") as String,
-                generatedPDFsPath = call.argument<String>("generatedPDFsPath") as String,
-                marginLeft = call.argument<Int>("marginLeft") as Int,
-                marginRight = call.argument<Int>("marginRight") as Int,
-                marginTop = call.argument<Int>("marginTop") as Int,
-                marginBottom = call.argument<Int>("marginBottom") as Int,
-                cleanScannedImagesWhenPdfGenerate = call.argument<Boolean>("cleanScannedImagesWhenPdfGenerate") as Boolean,
-                pageWidth = call.argument<Int>("pageWidth") as Int,
-                pageHeight = call.argument<Int>("pageHeight") as Int
+                imagesPaths = argument<List<String>>("imagesPaths") as List<String>,
+                pdfName = argument<String>("pdfName") as String,
+                generatedPDFsPath = argument<String>("generatedPDFsPath") as String,
+                marginLeft = argument<Int>("marginLeft") as Int,
+                marginRight = argument<Int>("marginRight") as Int,
+                marginTop = argument<Int>("marginTop") as Int,
+                marginBottom = argument<Int>("marginBottom") as Int,
+                cleanScannedImagesWhenPdfGenerate = argument<Boolean>("cleanScannedImagesWhenPdfGenerate") as Boolean,
+                pageWidth = argument<Int>("pageWidth") as Int,
+                pageHeight = argument<Int>("pageHeight") as Int
             )
             else -> result.notImplemented()
         }
@@ -112,14 +112,14 @@ class ImagePdfScannerPlugin : MethodCallHandler, PluginRegistry.ActivityResultLi
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
         if (requestCode == REQUEST_CODE_SCAN) {
-            if (resultCode == ScanActivity.RESULT_CODE_OK) {
+            if (resultCode == Activity.RESULT_OK) {
                 try {
                     resultWaitingScan?.success(data?.getStringExtra(ScanActivity.BUNDLE_RESULT_KEY_SCANNED_IMAGE_PATH))
                 } catch (ex: Exception) {
                     //nothing to do...
                     Log.e("Error on write result", ex.message)
                 }
-            } else if (resultCode == ScanActivity.RESULT_CODE_ERROR) {
+            } else if (resultCode == Activity.RESULT_CANCELED) {
                 resultWaitingScan?.error("ERROR", "error on scan", null)
             }
         }
