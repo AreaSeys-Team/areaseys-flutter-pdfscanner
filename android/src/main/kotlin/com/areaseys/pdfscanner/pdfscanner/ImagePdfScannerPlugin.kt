@@ -101,9 +101,9 @@ class ImagePdfScannerPlugin : MethodCallHandler, PluginRegistry.ActivityResultLi
                 marginBottom,
                 cleanScannedImagesWhenPdfGenerate,
                 pageWidth,
-                pageHeight
+                pageHeight,
+                callBack = { registrar.activity().runOnUiThread { result.success(it) } }
             )
-            result.success(pdfPath)
         } catch (ex: Exception) {
             result.error("ERROR!", ex.message, ex)
         }
