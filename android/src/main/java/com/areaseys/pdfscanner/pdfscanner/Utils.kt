@@ -8,6 +8,7 @@ import android.provider.MediaStore
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.util.*
 
 /**
  * Created by jhansi on 05/04/15.
@@ -24,7 +25,7 @@ fun saveImage(path: String, imageName: String, bitmap: Bitmap): String? {
     if (!file.exists()) {
         file.mkdirs()
     }
-    val finalPath = file.toString() + "/" + imageName.replace(" ", "_") + ".jpg"
+    val finalPath = file.toString() + "/" + imageName.replace(" ", "_") + "${Date().time}.jpg"
     try {
         FileOutputStream(finalPath).use { fos ->
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
