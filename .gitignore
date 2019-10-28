@@ -9,3 +9,5 @@ build/
 .idea/
 
 android/.externalNativeBuild/
+
+android/.cxx/
