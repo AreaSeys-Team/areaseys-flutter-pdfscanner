@@ -1,7 +1,7 @@
-#import "PdfscannerPlugin.h"
+#import "ImagePdfScannerPlugin.h"
 #import <pdfscanner/pdfscanner-Swift.h>
 
-@implementation PdfscannerPlugin
+@implementation ImagePdfScannerPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
   [SwiftPdfscannerPlugin registerWithRegistrar:registrar];
 }
