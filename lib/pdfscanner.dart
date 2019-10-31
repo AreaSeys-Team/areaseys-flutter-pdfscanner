@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:reorderables/reorderables.dart';
 
@@ -83,7 +84,6 @@ class ImagePdfScanner {
         "scannedImagesPath": scannedImagesPath ?? "/ImageScannerPlugin/scanned_images",
         "scannedImageName": scannedImageName ?? "scanned_${DateTime.now().millisecondsSinceEpoch.toString()}"
       });
-      print("PDFScannerPlugin: result of scanning -> $response");
       return Future.value(response);
     } catch (ex) {
       return Future.error(ex);
@@ -126,10 +126,12 @@ class PsfScannerScreenListener {
   Function _onGetAllImages;
   final Function(String imagePath) onImageScanned;
   final Function(String pdfPath) onPdfGenerated;
+  final Function(String error, Exception ex) onError;
 
   PsfScannerScreenListener({
     this.onImageScanned,
     this.onPdfGenerated,
+    this.onError,
   });
 
   List<String> getScannedImagesPaths() => _onGetAllImages != null ? _onGetAllImages() : List<String>();
@@ -157,30 +159,39 @@ class PdfScannerScreen extends StatefulWidget {
   final String generatePdfTitle;
   final Icon iconButtonAddImage;
   final Icon iconButtonGeneratePdf;
+  final String txtFromCamera;
+  final String txtFromFiles;
+  final String textTitleDialog;
+  final String txtOnError;
+  final String txtGeneratingPdf;
 
-  PdfScannerScreen({
-    this.imagesPaths,
-    this.pdfName,
-    this.generatedPDFsPath,
-    this.marginLeft,
-    this.marginRight,
-    this.marginTop,
-    this.marginBottom,
-    this.cleanScannedImagesWhenPdfGenerate,
-    this.pageSize,
-    this.scanSource,
-    this.scannedImagesPath,
-    this.scannedImageName,
-    this.screenBackground = Colors.white,
-    this.primaryScreenColor = Colors.blue,
-    this.accentScreenColor = Colors.blueAccent,
-    this.screenTitle = "AREAseys document scanner",
-    this.screenSubtitle,
-    this.generatePdfTitle = "Generate PDF",
-    this.iconButtonAddImage,
-    this.iconButtonGeneratePdf,
-    this.listener,
-  });
+  PdfScannerScreen(
+      {this.imagesPaths,
+      this.pdfName,
+      this.generatedPDFsPath,
+      this.marginLeft,
+      this.marginRight,
+      this.marginTop,
+      this.marginBottom,
+      this.cleanScannedImagesWhenPdfGenerate,
+      this.pageSize,
+      this.scanSource,
+      this.scannedImagesPath,
+      this.scannedImageName,
+      this.screenBackground = Colors.white,
+      this.primaryScreenColor = Colors.blue,
+      this.accentScreenColor = Colors.blueAccent,
+      this.screenTitle = "AREAseys document scanner",
+      this.screenSubtitle,
+      this.generatePdfTitle = "Generate PDF",
+      this.iconButtonAddImage,
+      this.iconButtonGeneratePdf,
+      this.listener,
+      this.txtOnError = "Error on scan image. Try again.",
+      this.textTitleDialog = "Select image source",
+      this.txtFromCamera = "Take a new photo",
+      this.txtFromFiles = "Select iamge from file",
+      this.txtGeneratingPdf = "Generating pdf..."});
 
   @override
   State<StatefulWidget> createState() => _PdfScannerScreen();
@@ -198,39 +209,43 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
     }
     pr = new ProgressDialog(context, type: ProgressDialogType.Normal, isDismissible: false, showLogs: false);
     pr.style(
-        message: 'Generating PDF...',
+        message: widget.txtGeneratingPdf ?? "",
         borderRadius: 10.0,
         backgroundColor: Colors.white,
-        progressWidget: CircularProgressIndicator(),
+        progressWidget: Container(
+          margin: EdgeInsets.all(10),
+          child: SpinKitFadingCube(
+            color: widget.primaryScreenColor,
+            size: 50,
+          ),
+        ),
         elevation: 10.0,
         insetAnimCurve: Curves.easeInOut,
         progress: 0.0,
         maxProgress: 100.0,
-        progressTextStyle: TextStyle(
-            color: Colors.black, fontSize: 13.0, fontWeight: FontWeight.w400),
-        messageTextStyle: TextStyle(
-            color: Colors.black, fontSize: 19.0, fontWeight: FontWeight.w600)
-    );
+        progressTextStyle: TextStyle(color: Colors.black, fontSize: 13.0, fontWeight: FontWeight.w400),
+        messageTextStyle: TextStyle(color: Colors.black, fontSize: 19.0, fontWeight: FontWeight.w600));
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     final wrap = ReorderableWrap(
-        alignment: WrapAlignment.start,
-        spacing: 5,
-        runSpacing: 10,
-        children: List<Widget>.generate(_imagesPaths.length, _buildPageItem),
-        minMainAxisCount: 3,
-        onReorder: _onReorder,
-        onNoReorder: (int index) {
-          //this callback is optional
-          debugPrint('${DateTime.now().toString().substring(5, 22)} reorder cancelled. index:$index');
-        },
-        onReorderStarted: (int index) {
-          //this callback is optional
-          debugPrint('${DateTime.now().toString().substring(5, 22)} reorder started: index:$index');
-        });
+      alignment: WrapAlignment.start,
+      spacing: 5,
+      runSpacing: 10,
+      children: List<Widget>.generate(_imagesPaths.length, _buildPageItem),
+      minMainAxisCount: 3,
+      onReorder: _onReorder,
+      onNoReorder: (int index) {
+        //this callback is optional
+        debugPrint('${DateTime.now().toString().substring(5, 22)} reorder cancelled. index:$index');
+      },
+      onReorderStarted: (int index) {
+        //this callback is optional
+        debugPrint('${DateTime.now().toString().substring(5, 22)} reorder started: index:$index');
+      },
+    );
     return Scaffold(
       backgroundColor: widget.screenBackground,
       bottomNavigationBar: BottomAppBar(
@@ -268,7 +283,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
                     generatedPDFsPath: widget.generatedPDFsPath,
                     cleanScannedImagesWhenPdfGenerate: widget.cleanScannedImagesWhenPdfGenerate,
                   ).then((result) {
-                    pr.hide();
+                    Future.delayed(Duration(seconds: 5), () => pr.hide());
                     widget.listener?.onPdfGenerated(result);
                   });
                 },
@@ -341,7 +356,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
         barrierDismissible: false,
         builder: (ctx) {
           return SimpleDialog(
-            title: Text("Select image source"),
+            title: Text(widget.textTitleDialog),
             children: <Widget>[
               SimpleDialogOption(
                 child: Row(
@@ -349,7 +364,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
                     Icon(Icons.camera_alt),
                     Container(width: 5),
                     Expanded(
-                      child: Text("Take a new photo"),
+                      child: Text(widget.txtFromCamera),
                     ),
                   ],
                 ),
@@ -368,7 +383,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
                     Icon(Icons.attach_file),
                     Container(width: 5),
                     Expanded(
-                      child: Text("Select image from files"),
+                      child: Text(widget.txtFromFiles),
                     ),
                   ],
                 ),
@@ -415,7 +430,6 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
   Widget _buildPageItem(final int index) {
     final width = (MediaQuery.of(context).size.width / 3) - 10;
     final height = width * 1.6;
-    print(width.toString());
     return Container(
       width: width,
       height: height,
