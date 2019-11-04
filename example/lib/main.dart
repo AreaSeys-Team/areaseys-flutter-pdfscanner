@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
           accentScreenColor: Colors.orangeAccent,
           primaryScreenColor: Colors.orange,
           generatePdfTitle: "Generar PDF",
-          screenTitle: "6conecta Contractors PDF scanner",
+          screenTitle: "6conecta PDF scanner",
           pageSize: PageSize.A4,
           cleanScannedImagesWhenPdfGenerate: false,
           screenBackground: Colors.grey[300],

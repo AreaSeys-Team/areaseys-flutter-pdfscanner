@@ -201,7 +201,7 @@ class PdfScannerScreen extends StatefulWidget {
 class _PdfScannerScreen extends State<PdfScannerScreen> {
   List<String> _imagesPaths = List();
   ProgressDialog pr;
-  bool _dialVisible = true;
+  bool _dialVisible = false;
 
   @override
   void initState() {
@@ -290,7 +290,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
                                       margin: const EdgeInsets.only(right: 6),
                                     )
                                   : Container(),
-                              Text(widget.generatePdfTitle, style: TextStyle(color: Colors.white)),
+                              Text(widget.generatePdfTitle + " with ${_imagesPaths.length} pages", style: TextStyle(color: Colors.white, fontSize: 18)),
                             ],
                           ),
                         ),
@@ -414,52 +414,25 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
       child: Column(
         children: <Widget>[
           Expanded(
-            child: Stack(
-              children: <Widget>[
-                Container(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(3),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          blurRadius: 5.0,
-                        ),
-                      ],
-                    ),
-                    margin: EdgeInsets.all(width / 10),
-                    padding: EdgeInsets.all(width / 20),
-                    child: Image.file(
-                      File(_imagesPaths[index]),
-                      fit: BoxFit.cover,
-                      filterQuality: FilterQuality.low,
-                    ),
-                    alignment: Alignment.center,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(3),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey,
+                    blurRadius: 5.0,
                   ),
-                ),
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Material(
-                    color: Colors.grey[300],
-                    shape: CircleBorder(),
-                    child: InkWell(
-                      onTap: () {
-                        setState(() {
-                          _imagesPaths.removeAt(index);
-                        });
-                      },
-                      child: Container(
-                        padding: EdgeInsets.all(4),
-                        child: Icon(
-                          Icons.close,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
+              margin: EdgeInsets.all(width / 10),
+              padding: EdgeInsets.all(width / 20),
+              child: Image.file(
+                File(_imagesPaths[index]),
+                fit: BoxFit.cover,
+                filterQuality: FilterQuality.low,
+              ),
+              alignment: Alignment.center,
             ),
           ),
           Container(
