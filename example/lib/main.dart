@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         home: PdfScannerScreen(
           listener: _pdfScannerScreenListener,
-          iconButtonGeneratePdf: Icon(Icons.insert_drive_file, color: Colors.white),
+          iconButtonGeneratePdf: Icon(Icons.book, color: Colors.white),
           marginTop: 50,
           marginBottom: 50,
           marginLeft: 40,
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
           pdfName: "scannedPDF_" + _nowTime + ".pdf",
           accentScreenColor: Colors.orangeAccent,
           primaryScreenColor: Colors.orange,
-          generatePdfTitle: "Generar PDF con las imagenes",
+          generatePdfTitle: "Generar PDF",
           screenTitle: "6conecta Contractors PDF scanner",
           pageSize: PageSize.A4,
           cleanScannedImagesWhenPdfGenerate: false,

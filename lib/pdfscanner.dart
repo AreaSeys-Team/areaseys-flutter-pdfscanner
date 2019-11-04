@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:reorderables/reorderables.dart';
@@ -200,6 +201,7 @@ class PdfScannerScreen extends StatefulWidget {
 class _PdfScannerScreen extends State<PdfScannerScreen> {
   List<String> _imagesPaths = List();
   ProgressDialog pr;
+  bool _dialVisible = true;
 
   @override
   void initState() {
@@ -248,57 +250,92 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
     );
     return Scaffold(
       backgroundColor: widget.screenBackground,
-      bottomNavigationBar: BottomAppBar(
-        notchMargin: 10,
-        shape: CircularNotchedRectangle(),
-        color: widget.primaryScreenColor,
-        child: Container(
-          padding: EdgeInsets.only(left: 10),
-          height: 50,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              MaterialButton(
+      bottomNavigationBar: _imagesPaths.length > 0
+          ? BottomAppBar(
+              elevation: 10,
+              child: Container(
+                height: 50,
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    widget.iconButtonGeneratePdf != null
-                        ? Container(
-                            child: widget.iconButtonGeneratePdf,
-                            margin: const EdgeInsets.only(right: 6),
-                          )
-                        : Container(),
-                    Text(widget.generatePdfTitle, style: TextStyle(color: Colors.white)),
+                    Expanded(
+                      child: Material(
+                        color: widget.primaryScreenColor,
+                        child: InkWell(
+                          splashColor: Colors.white,
+                          onTap: () {
+                            pr.show();
+                            ImagePdfScanner.generatePdf(
+                              imagesPaths: _imagesPaths,
+                              pdfName: widget.pdfName ?? "pdf_${DateTime.now().millisecondsSinceEpoch}.pdf",
+                              marginTop: widget.marginTop,
+                              marginBottom: widget.marginBottom,
+                              marginLeft: widget.marginLeft,
+                              marginRight: widget.marginRight,
+                              pageSize: widget.pageSize,
+                              generatedPDFsPath: widget.generatedPDFsPath,
+                              cleanScannedImagesWhenPdfGenerate: widget.cleanScannedImagesWhenPdfGenerate,
+                            ).then((result) {
+                              Future.delayed(Duration(seconds: 5), () => pr.hide());
+                              widget.listener?.onPdfGenerated(result);
+                            });
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              widget.iconButtonGeneratePdf != null
+                                  ? Container(
+                                      child: widget.iconButtonGeneratePdf,
+                                      margin: const EdgeInsets.only(right: 6),
+                                    )
+                                  : Container(),
+                              Text(widget.generatePdfTitle, style: TextStyle(color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
                   ],
                 ),
-                onPressed: () {
-                  pr.show();
-                  ImagePdfScanner.generatePdf(
-                    imagesPaths: _imagesPaths,
-                    pdfName: widget.pdfName ?? "pdf_${DateTime.now().millisecondsSinceEpoch}.pdf",
-                    marginTop: widget.marginTop,
-                    marginBottom: widget.marginBottom,
-                    marginLeft: widget.marginLeft,
-                    marginRight: widget.marginRight,
-                    pageSize: widget.pageSize,
-                    generatedPDFsPath: widget.generatedPDFsPath,
-                    cleanScannedImagesWhenPdfGenerate: widget.cleanScannedImagesWhenPdfGenerate,
-                  ).then((result) {
-                    Future.delayed(Duration(seconds: 5), () => pr.hide());
-                    widget.listener?.onPdfGenerated(result);
-                  });
-                },
-                elevation: 0,
-                color: widget.accentScreenColor,
-              )
-            ],
+              ),
+            )
+          : null,
+      floatingActionButton: SpeedDial(
+        // both default to 16
+        marginRight: 18,
+        marginBottom: 20,
+        child: !_dialVisible ? Icon(Icons.add) : Icon(Icons.close),
+        animatedIconTheme: IconThemeData(size: 22.0),
+        // this is ignored if animatedIcon is non null
+        // child: Icon(Icons.add),
+        // If true user is forced to close dial manually
+        // by tapping main button and overlay is not rendered.
+        closeManually: false,
+        curve: Curves.bounceIn,
+        overlayColor: Colors.black,
+        overlayOpacity: 0.5,
+        onOpen: () => setState(() => _dialVisible = true),
+        onClose: () => setState(() => _dialVisible = false),
+        tooltip: 'Add page',
+        heroTag: 'speed-dial-hero-tag',
+        backgroundColor: widget.primaryScreenColor,
+        foregroundColor: Colors.white,
+        elevation: 8.0,
+        shape: CircleBorder(),
+        children: [
+          SpeedDialChild(
+            child: Icon(Icons.collections, color: widget.primaryScreenColor),
+            backgroundColor: Colors.grey[200],
+            labelStyle: TextStyle(fontSize: 18.0),
+            onTap: () => _launchScannerPlugin(ImageSource.FILES),
           ),
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-      floatingActionButton: FloatingActionButton(
-        onPressed: _launchScannerPlugin,
-        child: widget.iconButtonAddImage ?? Icon(Icons.add),
-        backgroundColor: widget.accentScreenColor ?? Colors.blue,
+          SpeedDialChild(
+              child: Icon(Icons.camera_alt, color: widget.primaryScreenColor),
+              backgroundColor: Colors.grey[200],
+              labelStyle: TextStyle(fontSize: 18.0),
+              onTap: () => _launchScannerPlugin(ImageSource.CAMERA)),
+        ],
       ),
       appBar: AppBar(
         title: Text(widget.screenTitle),
@@ -348,60 +385,9 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
     );
   }
 
-  void _launchScannerPlugin() async {
-    var imageSource = widget.scanSource;
-    if (widget.scanSource == null) {
-      await showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) {
-          return SimpleDialog(
-            title: Text(widget.textTitleDialog),
-            children: <Widget>[
-              SimpleDialogOption(
-                child: Row(
-                  children: <Widget>[
-                    Icon(Icons.camera_alt),
-                    Container(width: 5),
-                    Expanded(
-                      child: Text(widget.txtFromCamera),
-                    ),
-                  ],
-                ),
-                onPressed: () {
-                  imageSource = ImageSource.CAMERA;
-                  Navigator.of(context).pop();
-                },
-              ),
-              Divider(
-                indent: 10,
-                endIndent: 10,
-              ),
-              SimpleDialogOption(
-                child: Row(
-                  children: <Widget>[
-                    Icon(Icons.attach_file),
-                    Container(width: 5),
-                    Expanded(
-                      child: Text(widget.txtFromFiles),
-                    ),
-                  ],
-                ),
-                onPressed: () {
-                  imageSource = ImageSource.FILES;
-                  Navigator.of(context).pop();
-                },
-              )
-            ],
-          );
-        },
-      );
-    }
-    if (imageSource == null) {
-      return;
-    }
+  void _launchScannerPlugin(final ImageSource source) async {
     ImagePdfScanner.scan(
-      scanSource: imageSource,
+      scanSource: source,
       scannedImagesPath: widget.scannedImagesPath,
       scannedImageName: widget.scannedImageName,
     )
@@ -409,15 +395,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
               _imagesPaths.add(path);
               widget.listener?.onImageScanned(path);
             })))
-        .catchError(
-          (final error) => showDialog(
-            context: context,
-            builder: (final ctx) => AlertDialog(
-              title: Text("Error!"),
-              content: Text(error is String ? error : ""),
-            ),
-          ),
-        );
+        .catchError((final error) => setState(() {}));
   }
 
   void _onReorder(final int oldIndex, final int newIndex) {
@@ -486,7 +464,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
           ),
           Container(
             margin: EdgeInsets.only(top: 5),
-            child: Text("Page $index"),
+            child: Text("Pág. $index"),
           ),
         ],
       ),
