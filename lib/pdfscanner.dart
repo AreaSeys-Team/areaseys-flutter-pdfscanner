@@ -83,7 +83,10 @@ class ImagePdfScanner {
       final String response = await _channel.invokeMethod('scan', {
         "scanSource": scanSource != null ? _imageSourceToValue[scanSource] : _imageSourceToValue[ImageSource.CAMERA],
         "scannedImagesPath": scannedImagesPath ?? "/ImageScannerPlugin/scanned_images",
-        "scannedImageName": scannedImageName ?? "scanned_${DateTime.now().millisecondsSinceEpoch.toString()}"
+        "scannedImageName": scannedImageName ?? "scanned_${DateTime
+            .now()
+            .millisecondsSinceEpoch
+            .toString()}"
       });
       return Future.value(response);
     } catch (ex) {
@@ -106,7 +109,10 @@ class ImagePdfScanner {
     try {
       final String response = await _channel.invokeMethod('generatePdf', {
         "imagesPaths": imagesPaths ?? List<String>(),
-        "pdfName": pdfName ?? "scan_" + DateTime.now().millisecondsSinceEpoch.toString(),
+        "pdfName": pdfName ?? "scan_" + DateTime
+            .now()
+            .millisecondsSinceEpoch
+            .toString(),
         "generatedPDFsPath": generatedPDFsPath ?? "/ImageScannerPlugin/generated_PDF",
         "marginLeft": marginLeft ?? 0,
         "marginRight": marginRight ?? 0,
@@ -165,34 +171,37 @@ class PdfScannerScreen extends StatefulWidget {
   final String textTitleDialog;
   final String txtOnError;
   final String txtGeneratingPdf;
+  final String toolTipContent;
 
-  PdfScannerScreen(
-      {this.imagesPaths,
-      this.pdfName,
-      this.generatedPDFsPath,
-      this.marginLeft,
-      this.marginRight,
-      this.marginTop,
-      this.marginBottom,
-      this.cleanScannedImagesWhenPdfGenerate,
-      this.pageSize,
-      this.scanSource,
-      this.scannedImagesPath,
-      this.scannedImageName,
-      this.screenBackground = Colors.white,
-      this.primaryScreenColor = Colors.blue,
-      this.accentScreenColor = Colors.blueAccent,
-      this.screenTitle = "AREAseys document scanner",
-      this.screenSubtitle,
-      this.generatePdfTitle = "Generate PDF",
-      this.iconButtonAddImage,
-      this.iconButtonGeneratePdf,
-      this.listener,
-      this.txtOnError = "Error on scan image. Try again.",
-      this.textTitleDialog = "Select image source",
-      this.txtFromCamera = "Take a new photo",
-      this.txtFromFiles = "Select iamge from file",
-      this.txtGeneratingPdf = "Generating pdf..."});
+  PdfScannerScreen({
+    this.imagesPaths,
+    this.pdfName,
+    this.generatedPDFsPath,
+    this.marginLeft,
+    this.marginRight,
+    this.marginTop,
+    this.marginBottom,
+    this.cleanScannedImagesWhenPdfGenerate,
+    this.pageSize,
+    this.scanSource,
+    this.scannedImagesPath,
+    this.scannedImageName,
+    this.screenBackground = Colors.white,
+    this.primaryScreenColor = Colors.blue,
+    this.accentScreenColor = Colors.blueAccent,
+    this.screenTitle = "AREAseys document scanner",
+    this.screenSubtitle,
+    this.generatePdfTitle = "Generate PDF",
+    this.iconButtonAddImage,
+    this.iconButtonGeneratePdf,
+    this.listener,
+    this.txtOnError = "Error on scan image. Try again.",
+    this.textTitleDialog = "Select image source",
+    this.txtFromCamera = "Take a new photo",
+    this.txtFromFiles = "Select iamge from file",
+    this.txtGeneratingPdf = "Generating pdf...",
+    this.toolTipContent = "No scanned pages, please tap in add(+) button to start scan.",
+  });
 
   @override
   State<StatefulWidget> createState() => _PdfScannerScreen();
@@ -202,6 +211,9 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
   List<String> _imagesPaths = List();
   ProgressDialog pr;
   bool _dialVisible = false;
+
+  int _pageInSorting = -1;
+  int _pageClicked = -1;
 
   @override
   void initState() {
@@ -233,73 +245,89 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
   @override
   Widget build(BuildContext context) {
     final wrap = ReorderableWrap(
+      buildDraggableFeedback: (context, contraints, widget) {
+        return Material(
+          color: Colors.transparent,
+          child: Container(
+            child: _buildPageItem(_pageInSorting, false),
+          ),
+        );
+      },
       alignment: WrapAlignment.start,
       spacing: 5,
       runSpacing: 10,
-      children: List<Widget>.generate(_imagesPaths.length, _buildPageItem),
+      children: List<Widget>.generate(_imagesPaths.length, (index) => _buildPageItem(index, true)),
       minMainAxisCount: 3,
       onReorder: _onReorder,
       onNoReorder: (int index) {
         //this callback is optional
         debugPrint('${DateTime.now().toString().substring(5, 22)} reorder cancelled. index:$index');
+        setState(() {
+          _pageInSorting = -1;
+        });
       },
       onReorderStarted: (int index) {
         //this callback is optional
         debugPrint('${DateTime.now().toString().substring(5, 22)} reorder started: index:$index');
+        setState(() {
+          _pageInSorting = index;
+        });
       },
     );
     return Scaffold(
       backgroundColor: widget.screenBackground,
       bottomNavigationBar: _imagesPaths.length > 0
           ? BottomAppBar(
-              elevation: 10,
-              child: Container(
-                height: 50,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    Expanded(
-                      child: Material(
-                        color: widget.primaryScreenColor,
-                        child: InkWell(
-                          splashColor: Colors.white,
-                          onTap: () {
-                            pr.show();
-                            ImagePdfScanner.generatePdf(
-                              imagesPaths: _imagesPaths,
-                              pdfName: widget.pdfName ?? "pdf_${DateTime.now().millisecondsSinceEpoch}.pdf",
-                              marginTop: widget.marginTop,
-                              marginBottom: widget.marginBottom,
-                              marginLeft: widget.marginLeft,
-                              marginRight: widget.marginRight,
-                              pageSize: widget.pageSize,
-                              generatedPDFsPath: widget.generatedPDFsPath,
-                              cleanScannedImagesWhenPdfGenerate: widget.cleanScannedImagesWhenPdfGenerate,
-                            ).then((result) {
-                              Future.delayed(Duration(seconds: 5), () => pr.hide());
-                              widget.listener?.onPdfGenerated(result);
-                            });
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              widget.iconButtonGeneratePdf != null
-                                  ? Container(
-                                      child: widget.iconButtonGeneratePdf,
-                                      margin: const EdgeInsets.only(right: 6),
-                                    )
-                                  : Container(),
-                              Text(widget.generatePdfTitle + " with ${_imagesPaths.length} pages", style: TextStyle(color: Colors.white, fontSize: 18)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    )
-                  ],
+        elevation: 10,
+        child: Container(
+          height: 50,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Expanded(
+                child: Material(
+                  color: widget.primaryScreenColor,
+                  child: InkWell(
+                    splashColor: Colors.white,
+                    onTap: () {
+                      pr.show();
+                      ImagePdfScanner.generatePdf(
+                        imagesPaths: _imagesPaths,
+                        pdfName: widget.pdfName ?? "pdf_${DateTime
+                            .now()
+                            .millisecondsSinceEpoch}.pdf",
+                        marginTop: widget.marginTop,
+                        marginBottom: widget.marginBottom,
+                        marginLeft: widget.marginLeft,
+                        marginRight: widget.marginRight,
+                        pageSize: widget.pageSize,
+                        generatedPDFsPath: widget.generatedPDFsPath,
+                        cleanScannedImagesWhenPdfGenerate: widget.cleanScannedImagesWhenPdfGenerate,
+                      ).then((result) {
+                        Future.delayed(Duration(seconds: 5), () => pr.hide());
+                        widget.listener?.onPdfGenerated(result);
+                      });
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        widget.iconButtonGeneratePdf != null
+                            ? Container(
+                          child: widget.iconButtonGeneratePdf,
+                          margin: const EdgeInsets.only(right: 6),
+                        )
+                            : Container(),
+                        Text(widget.generatePdfTitle, style: TextStyle(color: Colors.white, fontSize: 18)),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            )
+              )
+            ],
+          ),
+        ),
+      )
           : null,
       floatingActionButton: SpeedDial(
         // both default to 16
@@ -314,7 +342,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
         closeManually: false,
         curve: Curves.bounceIn,
         overlayColor: Colors.black,
-        overlayOpacity: 0.5,
+        overlayOpacity: 0.2,
         onOpen: () => setState(() => _dialVisible = true),
         onClose: () => setState(() => _dialVisible = false),
         tooltip: 'Add page',
@@ -325,7 +353,10 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
         shape: CircleBorder(),
         children: [
           SpeedDialChild(
-            child: Icon(Icons.collections, color: widget.primaryScreenColor),
+            child: Icon(
+              Icons.collections,
+              color: widget.primaryScreenColor,
+            ),
             backgroundColor: Colors.grey[200],
             labelStyle: TextStyle(fontSize: 18.0),
             onTap: () => _launchScannerPlugin(ImageSource.FILES),
@@ -346,39 +377,39 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
         children: <Widget>[
           widget.screenSubtitle != null
               ? Container(
-                  margin: EdgeInsets.only(
-                    top: 16,
-                    left: 16,
-                  ),
-                  child: Text(
-                    widget.screenSubtitle,
-                    style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
-                  ),
-                )
+            margin: EdgeInsets.only(
+              top: 16,
+              left: 16,
+            ),
+            child: Text(
+              widget.screenSubtitle,
+              style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+            ),
+          )
               : Container(),
           Expanded(
             child: _imagesPaths.length > 0
                 ? SingleChildScrollView(
-                    child: Container(
-                      margin: EdgeInsets.only(top: 40),
-                      alignment: Alignment.center,
-                      child: wrap,
-                    ),
-                  )
+              child: Container(
+                margin: EdgeInsets.only(top: 40),
+                alignment: Alignment.center,
+                child: wrap,
+              ),
+            )
                 : Container(
-                    padding: EdgeInsets.all(30),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Icon(Icons.scanner, color: Colors.grey[300], size: 100),
-                        Text(
-                          "No scanned pages, please tap in add(+) button to start scan.",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey[300]),
-                        ),
-                      ],
-                    ),
+              padding: EdgeInsets.all(30),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Icon(Icons.scanner, color: Colors.grey[300], size: 100),
+                  Text(
+                    widget.toolTipContent,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey[300]),
                   ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -391,7 +422,9 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
       scannedImagesPath: widget.scannedImagesPath,
       scannedImageName: widget.scannedImageName,
     )
-        .then((final String path) => setState(() => setState(() {
+        .then((final String path) =>
+        setState(() =>
+            setState(() {
               _imagesPaths.add(path);
               widget.listener?.onImageScanned(path);
             })))
@@ -402,13 +435,18 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
     setState(() {
       final String deleted = _imagesPaths.removeAt(oldIndex);
       _imagesPaths.insert(newIndex, deleted);
+      _pageClicked = -1;
+      _pageInSorting = -1;
     });
   }
 
-  Widget _buildPageItem(final int index) {
-    final width = (MediaQuery.of(context).size.width / 3) - 10;
+  Widget _buildPageItem(final int index, bool showPagNumber) {
+    final width = (MediaQuery
+        .of(context)
+        .size
+        .width / 3) - 10;
     final height = width * 1.6;
-    return Container(
+    final content = Container(
       width: width,
       height: height,
       child: Column(
@@ -437,10 +475,21 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
           ),
           Container(
             margin: EdgeInsets.only(top: 5),
-            child: Text("Pág. $index"),
+            child: Text(showPagNumber ? "Pág. $index" : ""),
           ),
         ],
       ),
+    );
+    return _pageClicked == index ? Container(
+        color: Colors.white70,
+        child: Stack(
+      children: <Widget>[
+        Expanded(child: Icon(Icons.delete),),
+        content,
+      ],
+    )) : InkWell(
+      onTap: () => setState(() => _pageClicked = index),
+      child: content,
     );
   }
 }
