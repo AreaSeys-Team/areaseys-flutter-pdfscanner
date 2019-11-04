@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ScanLibrary</string>
+    <string name="action_settings">Configuración</string>
+    <string name="scanning">Escaneando…</string>
+    <string name="done">¡Hecho!</string>
+    <string name="scan">Siguiente</string>
+    <string name="cantCrop">No se puede recortar la imagen, cambie los puntos.</string>
+    <string name="ok">OK</string>
+    <string name="loading">Cargando…</string>
+    <string name="applying_filter">Aplicando filtro…</string>
+    <string name="low_memory">¡Memoria baja!</string>
+    <string name="low_memory_message">Tu teléfono esta bajo de memoria es posible que el escaner no funcione como debe. Intente cerrar otras aplicaciones.</string>
+</resources>
