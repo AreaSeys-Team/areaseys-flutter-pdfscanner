@@ -165,6 +165,7 @@ class PdfScannerScreen extends StatefulWidget {
   final String txtOnError;
   final String txtGeneratingPdf;
   final String toolTipContent;
+  final String textDropArea;
 
   PdfScannerScreen({
     this.imagesPaths,
@@ -190,6 +191,7 @@ class PdfScannerScreen extends StatefulWidget {
     this.txtOnError = "Error on scan image. Try again.",
     this.txtGeneratingPdf = "Generating pdf...",
     this.toolTipContent = "No scanned pages, please tap in add(+) button to start scan.",
+    this.textDropArea = "Drag pages here for remove",
   });
 
   @override
@@ -237,8 +239,9 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print("LISTAAAAA LENGHT: ${_imagesPaths.length}");
     final wrap = ReorderableWrap(
-      buildDraggableFeedback: (context, contraints, widget) {
+      buildDraggableFeedback: (context, constraints, widget) {
         return Material(
           color: Colors.transparent,
           child: Container(
@@ -509,71 +512,70 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
   Widget _buildDeleteItemArea() {
     return DragTarget<int>(
       onWillAccept: (dynamic) {
-        print("On will accept");
         setState(() {
           _warnDelete = true;
         });
         return true;
       },
-      onAccept: (data) => setState(() {
-        _imagesPaths.removeAt(data);
-        if (_imagesPaths.isEmpty) {
-          _heightGenerate = 0;
-        }
-        _warnDelete = false;
-      }),
+      onAccept: (data) {
+        setState(() {
+          _imagesPaths.removeAt(data);
+          if (_imagesPaths.isEmpty) {
+            _heightGenerate = 0;
+          }
+          _warnDelete = false;
+        });
+        setState(() {});
+      },
       onLeave: (data) {
         print("leave");
         setState(() {
           _warnDelete = false;
         });
       },
-      builder: (ctx, l1, l2) {
-        print("rebuilding drop area...");
-        return Row(
-          children: <Widget>[
-            Expanded(
-              child: AnimatedOpacity(
-                duration: Duration(milliseconds: 200),
-                opacity: _dropAreaOpacity,
-                child: AnimatedContainer(
-                  color: Colors.grey[300],
-                  width: MediaQuery.of(context).size.width - 10,
-                  height: _heightDropArea,
-                  duration: Duration(milliseconds: 500),
-                  curve: Curves.easeInOutSine,
-                  child: Center(
-                    child: Stack(
-                      children: <Widget>[
-                        Container(color: _warnDelete ? Colors.redAccent : Colors.transparent),
-                        Align(
-                          alignment: Alignment.center,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Icon(Icons.delete, color: _warnDelete ? Colors.white : Colors.grey, size: 45),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  "Drag pages here for remove",
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      color: _warnDelete ? Colors.white : Colors.grey[500],
-                                      fontStyle: FontStyle.italic),
-                                ),
-                              )
-                            ],
-                          ),
+      builder: (ctx, l1, l2) => Row(
+        children: <Widget>[
+          Expanded(
+            child: AnimatedOpacity(
+              duration: Duration(milliseconds: 200),
+              opacity: _dropAreaOpacity,
+              child: AnimatedContainer(
+                color: Colors.grey[300],
+                width: MediaQuery.of(context).size.width - 10,
+                height: _heightDropArea,
+                duration: Duration(milliseconds: 500),
+                curve: Curves.easeInOutSine,
+                child: Center(
+                  child: Stack(
+                    children: <Widget>[
+                      Container(color: _warnDelete ? Colors.redAccent : Colors.transparent),
+                      Align(
+                        alignment: Alignment.center,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Icon(Icons.delete, color: _warnDelete ? Colors.white : Colors.grey, size: 45),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                widget.textDropArea ?? "",
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    color: _warnDelete ? Colors.white : Colors.grey[500],
+                                    fontStyle: FontStyle.italic),
+                              ),
+                            )
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            )
-          ],
-        );
-      },
+            ),
+          )
+        ],
+      ),
     );
   }
 }

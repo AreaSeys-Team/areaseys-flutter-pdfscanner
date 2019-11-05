@@ -19,11 +19,17 @@ class MyApp extends StatelessWidget {
   build(context) => MaterialApp(
         debugShowCheckedModeBanner: false,
         home: PdfScannerScreen(
+          imagesPaths: List.of([
+            "/storage/emulated/0/6conecta_contractors/images/Contrata002_scan1572971817234.jpg",
+            "/storage/emulated/0/6conecta_contractors/images/Contrata002_scan1572971844607.jpg",
+            "/storage/emulated/0/6conecta_contractors/images/Contrata002_scan1572971864275.jpg",
+            "/storage/emulated/0/6conecta_contractors/images/Contrata002_scan1572971885421.jpg",
+            "/storage/emulated/0/6conecta_contractors/images/Contrata002_scan1572971903352.jpg",
+          ]),
           listener: _pdfScannerScreenListener,
           iconButtonGeneratePdf: Icon(Icons.book, color: Colors.white),
           toolTipContent: "Press add button to start...",
           marginTop: 50,
-          screenSubtitle: "Tooltips:\n-> Long press and drag pages for sort them...\n-> Tap page for more options...",
           marginBottom: 50,
           marginLeft: 40,
           marginRight: 40,

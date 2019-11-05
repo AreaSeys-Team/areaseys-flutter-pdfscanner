@@ -7,9 +7,7 @@ import android.app.FragmentTransaction;
 import android.content.ComponentCallbacks2;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,7 +16,6 @@ import android.provider.MediaStore;
 import android.util.Log;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Objects;
 
 import androidx.annotation.NonNull;
@@ -44,6 +41,8 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
     private final int REQUEST_CODE_PICK_FILE = 4324;
     private final int REQUEST_CODE_START_CAMERA = 4323;
     private Uri fileUri;
+
+    private int stackCounter = 0;
 
     static {
         System.loadLibrary("Scanner");
@@ -85,9 +84,10 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
         fragment.setArguments(bundle);
         android.app.FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.content, fragment);
+        fragmentTransaction.replace(R.id.content, fragment);
         fragmentTransaction.addToBackStack(ScanFragment.class.toString());
         fragmentTransaction.commit();
+        stackCounter++;
     }
 
     @Override
@@ -100,9 +100,10 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
         fragment.setArguments(bundle);
         android.app.FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.content, fragment);
+        fragmentTransaction.replace(R.id.content, fragment);
         fragmentTransaction.addToBackStack(ResultFragment.class.toString());
         fragmentTransaction.commit();
+        stackCounter++;
     }
 
     @Override
@@ -265,6 +266,14 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
             }
         }
         else {
+            finish();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (stackCounter == 0) {
             finish();
         }
     }
