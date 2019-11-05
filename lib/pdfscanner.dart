@@ -131,12 +131,14 @@ class PsfScannerScreenListener {
   final Function(String error, Exception ex) onError;
 
   PsfScannerScreenListener({
-    this.onImageScanned,
-    this.onPdfGenerated,
+    this.onImageScanned = _doNothing,
+    this.onPdfGenerated = _doNothing,
     this.onError,
   });
 
   List<String> getScannedImagesPaths() => _onGetAllImages != null ? _onGetAllImages() : List<String>();
+
+  static void _doNothing(String path) => print("Generated -> " + path);
 }
 
 class PdfScannerScreen extends StatefulWidget {
@@ -157,13 +159,9 @@ class PdfScannerScreen extends StatefulWidget {
   final Color accentScreenColor;
   final Color screenBackground;
   final String screenTitle;
-  final String screenSubtitle;
   final String generatePdfTitle;
   final Icon iconButtonAddImage;
   final Icon iconButtonGeneratePdf;
-  final String txtFromCamera;
-  final String txtFromFiles;
-  final String textTitleDialog;
   final String txtOnError;
   final String txtGeneratingPdf;
   final String toolTipContent;
@@ -185,15 +183,11 @@ class PdfScannerScreen extends StatefulWidget {
     this.primaryScreenColor = Colors.blue,
     this.accentScreenColor = Colors.blueAccent,
     this.screenTitle = "AREAseys document scanner",
-    this.screenSubtitle,
     this.generatePdfTitle = "Generate PDF",
     this.iconButtonAddImage,
     this.iconButtonGeneratePdf,
     this.listener,
     this.txtOnError = "Error on scan image. Try again.",
-    this.textTitleDialog = "Select image source",
-    this.txtFromCamera = "Take a new photo",
-    this.txtFromFiles = "Select iamge from file",
     this.txtGeneratingPdf = "Generating pdf...",
     this.toolTipContent = "No scanned pages, please tap in add(+) button to start scan.",
   });
@@ -334,23 +328,16 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
             )
           : null,
       floatingActionButton: SpeedDial(
-        // both default to 16
         marginRight: 18,
         marginBottom: 20,
         child: !_dialVisible ? Icon(Icons.add) : Icon(Icons.close),
         animatedIconTheme: IconThemeData(size: 22.0),
-        // this is ignored if animatedIcon is non null
-        // child: Icon(Icons.add),
-        // If true user is forced to close dial manually
-        // by tapping main button and overlay is not rendered.
         closeManually: false,
         curve: Curves.bounceIn,
         overlayColor: Colors.black,
         overlayOpacity: 0.2,
         onOpen: () => setState(() => _dialVisible = true),
         onClose: () => setState(() => _dialVisible = false),
-        tooltip: 'Add page',
-        heroTag: 'speed-dial-hero-tag',
         backgroundColor: widget.primaryScreenColor,
         foregroundColor: Colors.white,
         elevation: 8.0,
