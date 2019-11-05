@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pdfscanner/pdfscanner.dart';
+import 'package:open_file/open_file.dart';
+
 
 void main() => runApp(MyApp());
 
@@ -10,6 +12,7 @@ class MyApp extends StatelessWidget {
     print("se ha añadido la imagen escaneada: " + newImage);
   }, onPdfGenerated: (pdfPath) {
     print("se ha generado el pdf " + pdfPath);
+    OpenFile.open(pdfPath);
   });
 
   @override
@@ -20,6 +23,7 @@ class MyApp extends StatelessWidget {
           iconButtonGeneratePdf: Icon(Icons.book, color: Colors.white),
           toolTipContent: "Press add button to start...",
           marginTop: 50,
+          screenSubtitle: "Tooltips:\n-> Long press and drag pages for sort them...\n-> Tap page for more options...",
           marginBottom: 50,
           marginLeft: 40,
           marginRight: 40,

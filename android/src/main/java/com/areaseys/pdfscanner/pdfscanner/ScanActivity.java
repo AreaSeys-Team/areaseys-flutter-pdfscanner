@@ -211,7 +211,7 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
             Log.e("ImagePdfScannerPlugin", "Error on create temporal for host temporal image file.");
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            final Uri tempFileUri = FileProvider.getUriForFile(getApplicationContext(), "com.areaseys_authority.imagepdfscanner", file);
+            final Uri tempFileUri = FileProvider.getUriForFile(getApplicationContext(), "com.areaseys.pdfscanner.pdfscanner_example.fileProvider", file);
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempFileUri);
         }
         else {
