@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pdfscanner/pdfscanner.dart';
+import 'package:open_file/open_file.dart';
+
 
 void main() => runApp(MyApp());
 
@@ -10,6 +12,7 @@ class MyApp extends StatelessWidget {
     print("se ha añadido la imagen escaneada: " + newImage);
   }, onPdfGenerated: (pdfPath) {
     print("se ha generado el pdf " + pdfPath);
+    OpenFile.open(pdfPath);
   });
 
   @override
@@ -17,21 +20,23 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         home: PdfScannerScreen(
           listener: _pdfScannerScreenListener,
-          iconButtonGeneratePdf: Icon(Icons.insert_drive_file, color: Colors.white),
+          iconButtonGeneratePdf: Icon(Icons.book, color: Colors.white),
+          toolTipContent: "Press add button to start...",
           marginTop: 50,
+          screenSubtitle: "Tooltips:\n-> Long press and drag pages for sort them...\n-> Tap page for more options...",
           marginBottom: 50,
           marginLeft: 40,
           marginRight: 40,
           generatedPDFsPath: "/6conecta_Contractors/pdfs",
           scannedImagesPath: "/6Conecta_Contractors/images",
           pdfName: "scannedPDF_" + _nowTime + ".pdf",
-          accentScreenColor: Colors.orangeAccent,
-          primaryScreenColor: Colors.orange,
-          generatePdfTitle: "Generar PDF con las imagenes",
-          screenTitle: "6conecta Contractors PDF scanner",
+          accentScreenColor: Colors.blueAccent,
+          primaryScreenColor: Colors.blue,
+          generatePdfTitle: "Generar PDF",
+          screenTitle: "6conecta PDF scanner",
           pageSize: PageSize.A4,
           cleanScannedImagesWhenPdfGenerate: false,
-          screenBackground: Colors.grey[300],
+          screenBackground: Colors.grey[100],
         ),
       );
 }
