@@ -2,8 +2,8 @@
 <resources>
     <string name="app_name">ScanLibrary</string>
     <string name="action_settings">Configuración</string>
-    <string name="scanning">Escaneando…</string>
-    <string name="done">¡Hecho!</string>
+    <string name="scanning">Recortando…</string>
+    <string name="done">Finalizar</string>
     <string name="scan">Siguiente</string>
     <string name="cantCrop">No se puede recortar la imagen, cambie los puntos.</string>
     <string name="ok">OK</string>

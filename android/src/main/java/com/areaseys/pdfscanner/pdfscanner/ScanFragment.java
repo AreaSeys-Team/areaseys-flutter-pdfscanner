@@ -65,7 +65,7 @@ public class ScanFragment extends Fragment {
 
     private void init() {
         sourceImageView = view.findViewById(R.id.sourceImageView);
-        Button scanButton = view.findViewById(R.id.scanButton);
+        Button scanButton = view.findViewById(R.id.mButtonCut);
         scanButton.setOnClickListener(new ScanButtonClickListener());
         sourceFrame = view.findViewById(R.id.sourceFrame);
         polygonView = view.findViewById(R.id.polygonView);

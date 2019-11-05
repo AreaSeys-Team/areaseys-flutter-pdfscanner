@@ -5,23 +5,16 @@
     android:background="@android:color/black"
     android:orientation="vertical">
 
-    <Button
-        android:id="@+id/scanButton"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:background="@android:color/white"
-        android:orientation="horizontal"
-        android:padding="@dimen/bottom_bar_padding"
-        android:text="@string/scan"
-        android:textSize="16sp"/>
-
     <FrameLayout
+        android:id="@+id/frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/scanButton"
+        android:layout_above="@id/rotationButtons"
         android:layout_gravity="center"
-        android:layout_margin="@dimen/scanPadding">
+        android:layout_marginStart="@dimen/scanPadding"
+        android:layout_marginTop="@dimen/scanPadding"
+        android:layout_marginEnd="@dimen/scanPadding"
+        android:layout_marginBottom="@dimen/scanPadding">
 
         <FrameLayout
             android:id="@+id/sourceFrame"
@@ -43,8 +36,81 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:visibility="gone"/>
+            android:visibility="gone" />
     </FrameLayout>
 
+    <LinearLayout
+        android:id="@+id/rotationButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/buttons"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/button3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="15dp"
+            android:background="@android:color/transparent"
+            android:drawableTop="@drawable/ic_image"
+            android:text="-90º"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginBottom="15dp"
+            android:background="@android:color/transparent"
+            android:drawableTop="@drawable/ic_image"
+            android:text="90º"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginEnd="0dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/mButtonCancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="2.5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_weight="1"
+            android:background="@android:color/white"
+            android:orientation="horizontal"
+            android:padding="@dimen/bottom_bar_padding"
+            android:text="Cancel"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/mButtonCut"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2.5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_weight="1"
+            android:background="@android:color/white"
+            android:orientation="horizontal"
+            android:padding="@dimen/bottom_bar_padding"
+            android:text="@string/scan"
+            android:textSize="16sp" />
+
+    </LinearLayout>
 
 </RelativeLayout>
