@@ -127,11 +127,13 @@ class ImagePdfScanner {
 class PsfScannerScreenListener {
   Function _onGetAllImages;
   final Function(String imagePath) onImageScanned;
+  final Function(String imagePath) onImageScannedDeleted;
   final Function(String pdfPath) onPdfGenerated;
   final Function(String error, Exception ex) onError;
 
   PsfScannerScreenListener({
     this.onImageScanned = _doNothing,
+    this.onImageScannedDeleted = _doNothing,
     this.onPdfGenerated = _doNothing,
     this.onError,
   });
@@ -517,6 +519,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
           //avoid deleted before wrap ends sorting.
           setState(() {
             _imagesPaths.remove(_imagesPaths.firstWhere((str) => str == _pathWaitingForDelete));
+            widget.listener?.onImageScannedDeleted(_pathWaitingForDelete);
             if (_imagesPaths.isEmpty) {
               _heightGenerate = 0;
             }
