@@ -63,7 +63,7 @@ public class ResultFragment extends Fragment {
         Button doneButton = view.findViewById(R.id.doneButton);
         doneButton.setOnClickListener(new DoneButtonClickListener());
         lastclicked = originalButton;
-        tintDrawable(ContextCompat.getColor(getActivity(), R.color.blue), originalButton);
+        tintButton(ContextCompat.getColor(getActivity(), R.color.blue), originalButton);
     }
 
     private Bitmap getBitmap() {
@@ -105,9 +105,9 @@ public class ResultFragment extends Fragment {
     private class DoneButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            tintDrawable(ContextCompat.getColor(getActivity(), android.R.color.white), lastclicked);
+            tintButton(ContextCompat.getColor(getActivity(), android.R.color.white), lastclicked);
             lastclicked = (Button) v;
-            tintDrawable(ContextCompat.getColor(getActivity(), R.color.blue), (Button) v);
+            tintButton(ContextCompat.getColor(getActivity(), R.color.blue), (Button) v);
             showProgressDialog(getResources().getString(R.string.loading));
             AsyncTask.execute(new Runnable() {
                 @Override
@@ -148,9 +148,9 @@ public class ResultFragment extends Fragment {
     private class BWButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(final View v) {
-            tintDrawable(ContextCompat.getColor(getActivity(), android.R.color.white), lastclicked);
+            tintButton(ContextCompat.getColor(getActivity(), android.R.color.white), lastclicked);
             lastclicked = (Button) v;
-            tintDrawable(ContextCompat.getColor(getActivity(), R.color.blue), (Button) v);
+            tintButton(ContextCompat.getColor(getActivity(), R.color.blue), (Button) v);
             showProgressDialog(getResources().getString(R.string.applying_filter));
             AsyncTask.execute(new Runnable() {
                 @Override
@@ -185,9 +185,9 @@ public class ResultFragment extends Fragment {
     private class MagicColorButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(final View v) {
-            tintDrawable(ContextCompat.getColor(getActivity(), android.R.color.white), lastclicked);
+            tintButton(ContextCompat.getColor(getActivity(), android.R.color.white), lastclicked);
             lastclicked = (Button) v;
-            tintDrawable(ContextCompat.getColor(getActivity(), R.color.blue), (Button) v);
+            tintButton(ContextCompat.getColor(getActivity(), R.color.blue), (Button) v);
             showProgressDialog(getResources().getString(R.string.applying_filter));
             AsyncTask.execute(new Runnable() {
                 @Override
@@ -222,9 +222,9 @@ public class ResultFragment extends Fragment {
     private class OriginalButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            tintDrawable(ContextCompat.getColor(getActivity(), android.R.color.white), lastclicked);
+            tintButton(ContextCompat.getColor(getActivity(), android.R.color.white), lastclicked);
             lastclicked = (Button) v;
-            tintDrawable(ContextCompat.getColor(getActivity(), R.color.blue), (Button) v);
+            tintButton(ContextCompat.getColor(getActivity(), R.color.blue), (Button) v);
             try {
                 showProgressDialog(getResources().getString(R.string.applying_filter));
                 transformed = original;
@@ -241,9 +241,9 @@ public class ResultFragment extends Fragment {
     private class GrayButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(final View v) {
-            tintDrawable(ContextCompat.getColor(getActivity(), android.R.color.white), lastclicked);
+            tintButton(ContextCompat.getColor(getActivity(), android.R.color.white), lastclicked);
             lastclicked = (Button) v;
-            tintDrawable(ContextCompat.getColor(getActivity(), R.color.blue), (Button) v);
+            tintButton(ContextCompat.getColor(getActivity(), R.color.blue), (Button) v);
             showProgressDialog(getResources().getString(R.string.applying_filter));
             AsyncTask.execute(new Runnable() {
                 @Override
@@ -290,7 +290,7 @@ public class ResultFragment extends Fragment {
         progressDialogFragment.dismissAllowingStateLoss();
     }
 
-    private void tintDrawable(final int colorId, final Button target) {
+    private void tintButton(final int colorId, final Button target) {
         target.setTextColor(colorId);
         Drawable[] drawables = target.getCompoundDrawablesRelative();
         for (Drawable drawable : drawables) {

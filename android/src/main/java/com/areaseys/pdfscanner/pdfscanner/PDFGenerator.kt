@@ -7,6 +7,7 @@ import android.graphics.pdf.PdfDocument
 import android.os.AsyncTask
 import android.os.Environment
 import android.util.Log
+import androidx.core.content.ContextCompat
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -56,8 +57,8 @@ fun createPdf(
                     finalWidth = availableWidth
                     finalHeight = (availableWidth * originalHeight) / originalWidth
                     if (finalHeight > availableHeight) { //height overflows in height after rescaled, scale by height...
-                        finalHeight = availableHeight
                         finalWidth = (availableHeight * finalWidth) / finalHeight
+                        finalHeight = availableHeight
                     }
                     rescaledByWidth = true
                 }
@@ -67,22 +68,21 @@ fun createPdf(
                 }
 
                 //Center image if it is necessary
-                var plusMarginLeft = 0
+                var plusForHorizontalCenter = 0
                 if (finalWidth < availableWidth) {
                     val difference = availableWidth - finalWidth
-                    plusMarginLeft = difference / 2
+                    plusForHorizontalCenter = difference / 2
                 }
 
+                val leftOffset = marginLeft + plusForHorizontalCenter
+                val rightOffset = leftOffset + finalWidth
+                val topOffset = marginTop
+                val bottomOffset = finalHeight
+
                 //Draw into page...
-                pageCanvas.drawBitmap(
-                    bitmap!!,
-                    Rect(0, 0, bitmap.width, bitmap.height),
-                    Rect(marginLeft + plusMarginLeft, marginTop, pageWidth - marginRight, pageHeight - marginBottom),
-                    null
-                )
+                pageCanvas.drawBitmap(bitmap!!, Rect(0, 0, bitmap.width, bitmap.height), Rect(leftOffset, topOffset, rightOffset, bottomOffset), null)
                 pdfDoc.finishPage(page)
                 bitmap.recycle()
-
             } catch (ex: Exception) {
                 Log.e("PDFGenerator plugin: ", "error on generate page for $imageForWrite path.")
             }
