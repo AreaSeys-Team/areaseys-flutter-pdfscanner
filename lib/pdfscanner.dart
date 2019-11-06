@@ -209,6 +209,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
   double _dropAreaOpacity = 0;
   double _heightGenerate = 0;
   bool _warnDelete = false;
+  String _pathWaitingForDelete;
 
   @override
   void initState() {
@@ -239,7 +240,6 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("LISTAAAAA LENGHT: ${_imagesPaths.length}");
     final wrap = ReorderableWrap(
       buildDraggableFeedback: (context, constraints, widget) {
         return Material(
@@ -257,8 +257,6 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
       needsLongPressDraggable: true,
       onReorder: _onReorder,
       onNoReorder: (int index) {
-        //this callback is optional
-        debugPrint('${DateTime.now().toString().substring(5, 22)} reorder cancelled. index:$index');
         setState(() {
           _pageInSorting = -1;
           _heightDropArea = 0;
@@ -266,8 +264,6 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
         });
       },
       onReorderStarted: (int index) {
-        //this callback is optional
-        debugPrint('${DateTime.now().toString().substring(5, 22)} reorder started: index:$index');
         setState(() {
           _pageInSorting = index;
           _heightDropArea = 100;
@@ -280,9 +276,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
       bottomNavigationBar: _imagesPaths.length > 0
           ? BottomAppBar(
               elevation: 10,
-              child: AnimatedContainer(
-                duration: Duration(seconds: 10),
-                curve: Curves.linear,
+              child: Container(
                 height: _heightGenerate,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -414,7 +408,6 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
   }
 
   void _onReorder(final int oldIndex, final int newIndex) {
-    print("Reordered: $oldIndex -> $newIndex");
     setState(() {
       final String deleted = _imagesPaths.removeAt(oldIndex);
       _imagesPaths.insert(newIndex, deleted);
@@ -485,12 +478,13 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
         ],
       ),
     );
+    if (itemInDrag) {
+      _pathWaitingForDelete = _imagesPaths[index];
+    }
     return itemInDrag
         ? LongPressDraggable<int>(
             ignoringFeedbackSemantics: true,
-            onDragEnd: (details) {
-              print(details);
-            },
+            onDragEnd: (details) {},
             data: index,
             maxSimultaneousDrags: 100,
             feedback: Container(
@@ -517,18 +511,20 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
         });
         return true;
       },
-      onAccept: (data) {
-        setState(() {
-          _imagesPaths.removeAt(data);
-          if (_imagesPaths.isEmpty) {
-            _heightGenerate = 0;
-          }
-          _warnDelete = false;
+      //Be careful index change by ReorderableWrap widget. NOT USE!
+      onAccept: (index) {
+        Future.delayed(Duration(milliseconds: 200), () {
+          //avoid deleted before wrap ends sorting.
+          setState(() {
+            _imagesPaths.remove(_imagesPaths.firstWhere((str) => str == _pathWaitingForDelete));
+            if (_imagesPaths.isEmpty) {
+              _heightGenerate = 0;
+            }
+            _warnDelete = false;
+          });
         });
-        setState(() {});
       },
       onLeave: (data) {
-        print("leave");
         setState(() {
           _warnDelete = false;
         });

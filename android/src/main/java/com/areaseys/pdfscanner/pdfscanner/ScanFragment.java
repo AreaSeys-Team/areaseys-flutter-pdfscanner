@@ -100,6 +100,13 @@ public class ScanFragment extends Fragment {
                 });
             }
         });
+        view.findViewById(R.id.mButtonCancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                original.recycle();
+                getActivity().finish();
+            }
+        });
     }
 
     private Bitmap getBitmap() {

@@ -6,6 +6,8 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -18,6 +20,8 @@ import android.widget.ImageView;
 
 import java.io.File;
 import java.io.IOException;
+
+import androidx.core.content.ContextCompat;
 
 /**
  * Created by jhansi on 29/03/15.
@@ -34,6 +38,8 @@ public class ResultFragment extends Fragment {
     private Bitmap original;
     private Bitmap transformed;
     private static ProgressDialogFragment progressDialogFragment;
+
+    private Button lastclicked;
 
     @Override
     @SuppressLint("InflateParams")
@@ -56,6 +62,8 @@ public class ResultFragment extends Fragment {
         scannedImageView.setImageBitmap(check4AvoidTooLargeOpenGLError(getBitmap()));
         Button doneButton = view.findViewById(R.id.doneButton);
         doneButton.setOnClickListener(new DoneButtonClickListener());
+        lastclicked = originalButton;
+        tintDrawable(ContextCompat.getColor(getActivity(), R.color.blue), originalButton);
     }
 
     private Bitmap getBitmap() {
@@ -97,6 +105,9 @@ public class ResultFragment extends Fragment {
     private class DoneButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
+            tintDrawable(ContextCompat.getColor(getActivity(), android.R.color.white), lastclicked);
+            lastclicked = (Button) v;
+            tintDrawable(ContextCompat.getColor(getActivity(), R.color.blue), (Button) v);
             showProgressDialog(getResources().getString(R.string.loading));
             AsyncTask.execute(new Runnable() {
                 @Override
@@ -104,7 +115,7 @@ public class ResultFragment extends Fragment {
                     try {
 
                         //Delete cropped image
-                        boolean resultado = new File(((Uri) getArguments().getParcelable(BUNDLE_EXTRA_KEY_SCANNED_RESULT)).getPath()).delete();
+                        boolean wasDeleted = new File(((Uri) getArguments().getParcelable(BUNDLE_EXTRA_KEY_SCANNED_RESULT)).getPath()).delete();
 
                         //Save scanned image
                         final String resultImagePath = UtilsKt.saveImage(
@@ -137,6 +148,9 @@ public class ResultFragment extends Fragment {
     private class BWButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(final View v) {
+            tintDrawable(ContextCompat.getColor(getActivity(), android.R.color.white), lastclicked);
+            lastclicked = (Button) v;
+            tintDrawable(ContextCompat.getColor(getActivity(), R.color.blue), (Button) v);
             showProgressDialog(getResources().getString(R.string.applying_filter));
             AsyncTask.execute(new Runnable() {
                 @Override
@@ -171,6 +185,9 @@ public class ResultFragment extends Fragment {
     private class MagicColorButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(final View v) {
+            tintDrawable(ContextCompat.getColor(getActivity(), android.R.color.white), lastclicked);
+            lastclicked = (Button) v;
+            tintDrawable(ContextCompat.getColor(getActivity(), R.color.blue), (Button) v);
             showProgressDialog(getResources().getString(R.string.applying_filter));
             AsyncTask.execute(new Runnable() {
                 @Override
@@ -205,6 +222,9 @@ public class ResultFragment extends Fragment {
     private class OriginalButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
+            tintDrawable(ContextCompat.getColor(getActivity(), android.R.color.white), lastclicked);
+            lastclicked = (Button) v;
+            tintDrawable(ContextCompat.getColor(getActivity(), R.color.blue), (Button) v);
             try {
                 showProgressDialog(getResources().getString(R.string.applying_filter));
                 transformed = original;
@@ -221,6 +241,9 @@ public class ResultFragment extends Fragment {
     private class GrayButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(final View v) {
+            tintDrawable(ContextCompat.getColor(getActivity(), android.R.color.white), lastclicked);
+            lastclicked = (Button) v;
+            tintDrawable(ContextCompat.getColor(getActivity(), R.color.blue), (Button) v);
             showProgressDialog(getResources().getString(R.string.applying_filter));
             AsyncTask.execute(new Runnable() {
                 @Override
@@ -265,5 +288,15 @@ public class ResultFragment extends Fragment {
 
     protected synchronized void dismissDialog() {
         progressDialogFragment.dismissAllowingStateLoss();
+    }
+
+    private void tintDrawable(final int colorId, final Button target) {
+        target.setTextColor(colorId);
+        Drawable[] drawables = target.getCompoundDrawablesRelative();
+        for (Drawable drawable : drawables) {
+            if (drawable != null) {
+                drawable.setColorFilter(colorId, PorterDuff.Mode.SRC_ATOP);
+            }
+        }
     }
 }

@@ -90,14 +90,13 @@
             android:id="@+id/mButtonCancel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
             android:layout_marginEnd="2.5dp"
-            android:layout_marginBottom="5dp"
             android:layout_weight="1"
-            android:background="@android:color/white"
+            android:background="@color/blue"
             android:orientation="horizontal"
             android:padding="@dimen/bottom_bar_padding"
             android:text="Cancel"
+            android:textColor="@android:color/white"
             android:textSize="16sp" />
 
         <Button
@@ -105,13 +104,12 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="2.5dp"
-            android:layout_marginEnd="5dp"
-            android:layout_marginBottom="5dp"
             android:layout_weight="1"
-            android:background="@android:color/white"
+            android:background="@color/blue"
             android:orientation="horizontal"
             android:padding="@dimen/bottom_bar_padding"
             android:text="@string/scan"
+            android:textColor="@android:color/white"
             android:textSize="16sp" />
 
     </LinearLayout>
