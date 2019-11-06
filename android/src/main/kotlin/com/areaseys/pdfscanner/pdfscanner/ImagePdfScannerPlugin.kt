@@ -91,7 +91,7 @@ class ImagePdfScannerPlugin : MethodCallHandler, PluginRegistry.ActivityResultLi
         pageHeight: Int
     ) {
         try {
-            val pdfPath = createPdf(
+            createPdf(
                 imagesPaths,
                 pdfName,
                 generatedPDFsPath,

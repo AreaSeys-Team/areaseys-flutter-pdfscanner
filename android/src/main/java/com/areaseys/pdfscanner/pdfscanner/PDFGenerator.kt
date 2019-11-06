@@ -29,24 +29,60 @@ fun createPdf(
     AsyncTask.execute {
         val pdfDoc = PdfDocument()
         val options = BitmapFactory.Options()
-        options.inSampleSize = 3
+        //options.inSampleSize = 2
+        var bitmap: Bitmap?
         for (imageForWrite in imagesPaths) {
             try {
                 //dimens in points see: https://www.prepressure.com/library/paper-size
                 val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, imagesPaths.size)
                 val page = pdfDoc.startPage(pageInfo.create())
                 val pageCanvas = page.canvas
-                var bitmap = BitmapFactory.decodeFile(imageForWrite, options)
+                bitmap = BitmapFactory.decodeFile(imageForWrite, options)
+
+                //compress...
                 val compressed = ByteArrayOutputStream()
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 90, compressed)
                 bitmap = BitmapFactory.decodeStream(ByteArrayInputStream(compressed.toByteArray()))
+
+                //rescaling...
+                var rescaledByWidth = false
+                val originalHeight = bitmap.height
+                val originalWidth = bitmap.width
+                var finalHeight = originalHeight
+                var finalWidth = originalWidth
+                val availableHeight = pageHeight - (marginTop + marginBottom)
+                val availableWidth = pageWidth - (marginLeft + marginRight)
+                if (originalWidth > availableWidth) { //width overflows, scaling by width
+                    finalWidth = availableWidth
+                    finalHeight = (availableWidth * originalHeight) / originalWidth
+                    if (finalHeight > availableHeight) { //height overflows in height after rescaled, scale by height...
+                        finalHeight = availableHeight
+                        finalWidth = (availableHeight * finalWidth) / finalHeight
+                    }
+                    rescaledByWidth = true
+                }
+                if (!rescaledByWidth && originalHeight > availableHeight) { //height overflows, scaling by height...
+                    finalHeight = availableHeight
+                    finalWidth = (availableHeight * originalWidth) / originalHeight
+                }
+
+                //Center image if it is necessary
+                var plusMarginLeft = 0
+                if (finalWidth < availableWidth) {
+                    val difference = availableWidth - finalWidth
+                    plusMarginLeft = difference / 2
+                }
+
+                //Draw into page...
                 pageCanvas.drawBitmap(
-                    bitmap,
+                    bitmap!!,
                     Rect(0, 0, bitmap.width, bitmap.height),
-                    Rect(marginLeft, marginTop, pageWidth - marginRight, pageHeight - marginBottom),
+                    Rect(marginLeft + plusMarginLeft, marginTop, pageWidth - marginRight, pageHeight - marginBottom),
                     null
                 )
                 pdfDoc.finishPage(page)
+                bitmap.recycle()
+
             } catch (ex: Exception) {
                 Log.e("PDFGenerator plugin: ", "error on generate page for $imageForWrite path.")
             }
