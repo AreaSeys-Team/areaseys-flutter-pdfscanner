@@ -251,7 +251,7 @@ public class PolygonView extends FrameLayout {
                         color = getResources().getColor(R.color.blue);
                     }
                     else {
-                        color = getResources().getColor(R.color.orange);
+                        color = getResources().getColor(R.color.red);
                     }
                     paint.setColor(color);
                     break;
@@ -300,7 +300,7 @@ public class PolygonView extends FrameLayout {
                         color = getResources().getColor(R.color.blue);
                     }
                     else {
-                        color = getResources().getColor(R.color.orange);
+                        color = getResources().getColor(R.color.red);
                     }
                     paint.setColor(color);
                     break;

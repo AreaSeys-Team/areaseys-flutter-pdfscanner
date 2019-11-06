@@ -57,7 +57,7 @@
             android:layout_marginEnd="5dp"
             android:layout_marginBottom="15dp"
             android:background="?selectableItemBackgroundBorderless"
-            android:drawableTop="@drawable/ic_rotate_left_black_50dp"
+            android:drawableTop="@drawable/ic_rotate_left_black"
             android:text="-90º"
             android:textColor="@android:color/white"
             tools:ignore="HardcodedText" />
@@ -69,7 +69,7 @@
             android:layout_marginStart="5dp"
             android:layout_marginBottom="15dp"
             android:background="?selectableItemBackgroundBorderless"
-            android:drawableTop="@drawable/ic_rotate_right_black_50dp"
+            android:drawableTop="@drawable/ic_rotate_right_black"
             android:text="90º"
             android:textColor="@android:color/white"
             tools:ignore="HardcodedText" />
@@ -95,7 +95,7 @@
             android:background="@color/blue"
             android:orientation="horizontal"
             android:padding="@dimen/bottom_bar_padding"
-            android:text="Cancel"
+            android:text="@string/cancel"
             android:textColor="@android:color/white"
             android:textSize="16sp" />
 
