@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/black"
@@ -50,26 +51,28 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/button3"
+            android:id="@+id/mButtonRotateLeft"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="5dp"
             android:layout_marginBottom="15dp"
-            android:background="@android:color/transparent"
-            android:drawableTop="@drawable/ic_image"
+            android:background="?selectableItemBackgroundBorderless"
+            android:drawableTop="@drawable/ic_rotate_left_black_50dp"
             android:text="-90º"
-            android:textColor="@android:color/white" />
+            android:textColor="@android:color/white"
+            tools:ignore="HardcodedText" />
 
         <Button
-            android:id="@+id/button2"
+            android:id="@+id/mButtonRotateRight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
             android:layout_marginBottom="15dp"
-            android:background="@android:color/transparent"
-            android:drawableTop="@drawable/ic_image"
+            android:background="?selectableItemBackgroundBorderless"
+            android:drawableTop="@drawable/ic_rotate_right_black_50dp"
             android:text="90º"
-            android:textColor="@android:color/white" />
+            android:textColor="@android:color/white"
+            tools:ignore="HardcodedText" />
     </LinearLayout>
 
     <LinearLayout

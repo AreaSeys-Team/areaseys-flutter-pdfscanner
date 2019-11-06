@@ -78,6 +78,28 @@ public class ScanFragment extends Fragment {
                 }
             }
         });
+        view.findViewById(R.id.mButtonRotateLeft).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AsyncTask.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        rotateImage(-90);
+                    }
+                });
+            }
+        });
+        view.findViewById(R.id.mButtonRotateRight).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AsyncTask.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        rotateImage(+90);
+                    }
+                });
+            }
+        });
     }
 
     private Bitmap getBitmap() {
@@ -237,5 +259,26 @@ public class ScanFragment extends Fragment {
 
     protected void dismissDialog() {
         progressDialogFragment.dismissAllowingStateLoss();
+    }
+
+    /**
+     * Rotate original bitmap.
+     *
+     * @param degrees rotation as degrees
+     */
+    private void rotateImage(float degrees) {
+        showProgressDialog("Rotating " + degrees + "º...");
+        final Matrix matrix = new Matrix();
+        matrix.postRotate(degrees);
+        final Bitmap newBitmap = Bitmap.createBitmap(original, 0, 0, original.getWidth(), original.getHeight(), matrix, true);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                setBitmap(newBitmap);
+                original.recycle();
+                original = newBitmap;
+                dismissDialog();
+            }
+        });
     }
 }

@@ -272,25 +272,11 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
         if (stackCounter == 0) {
             finish();
         }
-    }
-
-    private void clearTempImages() {
-        try {
-            final String imagePath = Environment.getExternalStorageDirectory() + getIntent().getStringExtra(BUNDLE_EXTRA_KEY_SCANNED_IMAGES_PATH);
-            File tempFolder = new File(imagePath);
-            for (File f : tempFolder.listFiles()) {
-                boolean deleted = f.delete();
-                if (!deleted) {
-                    Log.w("ImagePdfScannerPlugin", "Error on delete temporal file: " + tempFolder.getPath());
-                }
-            }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
+        else {
+            super.onBackPressed();
         }
     }
 }
