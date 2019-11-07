@@ -11,7 +11,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +18,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import java.io.File;
-import java.io.IOException;
 
 import androidx.core.content.ContextCompat;
 
@@ -59,7 +57,7 @@ public class ResultFragment extends Fragment {
         grayModeButton.setOnClickListener(new GrayButtonClickListener());
         Button bwButton = view.findViewById(R.id.BWMode);
         bwButton.setOnClickListener(new BWButtonClickListener());
-        scannedImageView.setImageBitmap(check4AvoidTooLargeOpenGLError(getBitmap()));
+        scannedImageView.setImageBitmap(getBitmap());
         Button doneButton = view.findViewById(R.id.doneButton);
         doneButton.setOnClickListener(new DoneButtonClickListener());
         lastclicked = originalButton;
@@ -68,38 +66,11 @@ public class ResultFragment extends Fragment {
 
     private Bitmap getBitmap() {
         final Uri uri = getArguments().getParcelable(BUNDLE_EXTRA_KEY_SCANNED_RESULT);
-        try {
-            assert uri != null;
-            original = check4AvoidTooLargeOpenGLError(UtilsKt.getBitmap(getActivity(), uri));
-            new File(uri.getPath()).deleteOnExit();
-            return original;
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private Bitmap check4AvoidTooLargeOpenGLError(final Bitmap bitmap) {
-        final int originalHeight = bitmap.getHeight();
-        final int originalWidth = bitmap.getWidth();
-        if (originalHeight <= 1500 && originalWidth <= 1500) {
-            return bitmap;
-        }
-        int finalHeight;
-        int finalWidth;
-        if (originalHeight > originalWidth) {
-            //Height is more bigger than width, scaling by height...
-            finalHeight = 1500;
-            finalWidth = (1500 * originalWidth) / originalHeight;
-        }
-        else {
-            //Scaling by width...
-            finalWidth = 1500;
-            finalHeight = (1500 * originalHeight) / originalWidth;
-        }
-        Log.d(this.getClass().getSimpleName(), "Bitmap rescaled for avoid OpenGL too large error --> final size:{width: " + finalWidth + ", height: " + finalHeight + "}");
-        return Bitmap.createScaledBitmap(bitmap, finalWidth, finalHeight, true);
+        assert uri != null;
+        View frame2 = view.findViewById(R.id.frame2);
+        original = UtilsKt.getBitmap(uri, frame2.getHeight(), frame2.getWidth());
+        new File(uri.getPath()).deleteOnExit();
+        return original;
     }
 
     private class DoneButtonClickListener implements View.OnClickListener {

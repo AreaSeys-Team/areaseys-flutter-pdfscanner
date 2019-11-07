@@ -7,7 +7,6 @@ import android.app.FragmentManager;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.PointF;
-import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -23,7 +22,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -110,28 +108,21 @@ public class ScanFragment extends Fragment {
     }
 
     private Bitmap getBitmap() {
-        try {
-            final Uri uri = getArguments().getParcelable(BUNDLE_EXTRA_KEY_SELECTED_BITMAP);
-            assert uri != null;
-            final Bitmap bitmap = UtilsKt.getBitmap(getActivity(), uri);
-            new File(uri.getPath()).deleteOnExit();
-            return bitmap;
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        final Uri uri = getArguments().getParcelable(BUNDLE_EXTRA_KEY_SELECTED_BITMAP);
+        assert uri != null;
+        final Bitmap bitmap = UtilsKt.getBitmap(uri, sourceFrame.getHeight(), sourceFrame.getWidth());
+        new File(uri.getPath()).deleteOnExit();
+        return bitmap;
     }
 
     private void setBitmap(Bitmap original) {
-        Bitmap scaledBitmap = scaledBitmap(original, sourceFrame.getWidth(), sourceFrame.getHeight());
-        sourceImageView.setImageBitmap(scaledBitmap);
-        Bitmap tempBitmap = ((BitmapDrawable) sourceImageView.getDrawable()).getBitmap();
-        SparseArray<PointF> pointFs = getEdgePoints(tempBitmap);
+        sourceImageView.setImageBitmap(original);
+        final Bitmap tempBitmap = ((BitmapDrawable) sourceImageView.getDrawable()).getBitmap();
+        final SparseArray<PointF> pointFs = getEdgePoints(tempBitmap);
         polygonView.setPoints(pointFs);
         polygonView.setVisibility(View.VISIBLE);
-        int padding = (int) getResources().getDimension(R.dimen.scanPadding);
-        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(tempBitmap.getWidth() + 2 * padding, tempBitmap.getHeight() + 2 * padding);
+        final int padding = (int) getResources().getDimension(R.dimen.scanPadding);
+        final FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(tempBitmap.getWidth() + 2 * padding, tempBitmap.getHeight() + 2 * padding);
         layoutParams.gravity = Gravity.CENTER;
         polygonView.setLayoutParams(layoutParams);
     }
@@ -199,12 +190,6 @@ public class ScanFragment extends Fragment {
 
     private boolean isScanPointsValid(SparseArray<PointF> points) {
         return points.size() == 4;
-    }
-
-    private Bitmap scaledBitmap(Bitmap bitmap, int width, int height) {
-        Matrix m = new Matrix();
-        m.setRectToRect(new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight()), new RectF(0, 0, width, height), Matrix.ScaleToFit.CENTER);
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
     }
 
     private Bitmap getScannedBitmap(Bitmap original, SparseArray<PointF> points) {

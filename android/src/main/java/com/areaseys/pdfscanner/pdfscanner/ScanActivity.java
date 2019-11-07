@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Window;
 
 import java.io.File;
 import java.util.Objects;
@@ -109,18 +110,15 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Bitmap bitmap = null;
         Uri uri = null;
         if (resultCode == Activity.RESULT_OK) {
             try {
                 switch (requestCode) {
                     case REQUEST_CODE_START_CAMERA:
-                        bitmap = UtilsKt.getBitmap(this, fileUri);
                         uri = fileUri;
                         break;
 
                     case REQUEST_CODE_PICK_FILE:
-                        bitmap = UtilsKt.getBitmap(this, data.getData());
                         uri = data.getData();
                         break;
                 }
@@ -132,9 +130,8 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
         else {
             finish();
         }
-        if (bitmap != null) {
-            postImagePick(bitmap, uri);
-        }
+
+        onBitmapSelect(uri);
     }
 
     @Override
@@ -220,12 +217,6 @@ public class ScanActivity extends AppCompatActivity implements IScanner, Compone
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempFileUri);
         }
         startActivityForResult(cameraIntent, REQUEST_CODE_START_CAMERA);
-    }
-
-    protected void postImagePick(final Bitmap bitmap, final Uri uri) {
-        //Uri uri = UtilsKt.getUri(this, bitmap);
-        bitmap.recycle();
-        onBitmapSelect(uri);
     }
 
     private File createImageFile() {
