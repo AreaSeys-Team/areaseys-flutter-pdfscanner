@@ -201,7 +201,7 @@ class PdfScannerScreen extends StatefulWidget {
 }
 
 class _PdfScannerScreen extends State<PdfScannerScreen> {
-  List<String> _imagesPaths = List();
+  List<String> _imagesPaths;
   ProgressDialog pr;
   bool _dialVisible = false;
 
@@ -209,13 +209,12 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
   int _pageClicked = -1;
   double _heightDropArea = 0;
   double _dropAreaOpacity = 0;
-  double _heightGenerate = 0;
   bool _warnDelete = false;
   String _pathWaitingForDelete;
 
   @override
   void initState() {
-    _imagesPaths = widget.imagesPaths ?? List<String>();
+    _imagesPaths = widget.imagesPaths ?? List();
     if (widget.listener != null) {
       widget.listener._onGetAllImages = () => _imagesPaths;
     }
@@ -242,6 +241,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("List of scanned lenght -> ${_imagesPaths.length}");
     final wrap = ReorderableWrap(
       buildDraggableFeedback: (context, constraints, widget) {
         return Material(
@@ -279,7 +279,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
           ? BottomAppBar(
               elevation: 10,
               child: Container(
-                height: _heightGenerate,
+                height: 50,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -404,7 +404,6 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
         .then((final String path) => setState(() => setState(() {
               _imagesPaths.add(path);
               widget.listener?.onImageScanned(path);
-              _heightGenerate = 50;
             })))
         .catchError((final error) => setState(() {}));
   }
@@ -520,9 +519,6 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
           setState(() {
             _imagesPaths.remove(_imagesPaths.firstWhere((str) => str == _pathWaitingForDelete));
             widget.listener?.onImageScannedDeleted(_pathWaitingForDelete);
-            if (_imagesPaths.isEmpty) {
-              _heightGenerate = 0;
-            }
             _warnDelete = false;
           });
         });
@@ -559,9 +555,10 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
                               child: Text(
                                 widget.textDropArea ?? "",
                                 style: TextStyle(
-                                    fontSize: 16,
-                                    color: _warnDelete ? Colors.white : Colors.grey[500],
-                                    fontStyle: FontStyle.italic),
+                                  fontSize: 16,
+                                  color: _warnDelete ? Colors.white : Colors.grey[500],
+                                  fontStyle: FontStyle.italic,
+                                ),
                               ),
                             )
                           ],
