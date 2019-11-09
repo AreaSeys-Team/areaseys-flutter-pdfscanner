@@ -6,11 +6,13 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -67,8 +69,12 @@ public class ResultFragment extends Fragment {
     private Bitmap getBitmap() {
         final Uri uri = getArguments().getParcelable(BUNDLE_EXTRA_KEY_SCANNED_RESULT);
         assert uri != null;
-        View frame2 = view.findViewById(R.id.frame2);
-        original = UtilsKt.getBitmap(uri, frame2.getHeight(), frame2.getWidth());
+        Display display = getActivity().getWindowManager(). getDefaultDisplay();
+        Point size = new Point();
+        display. getSize(size);
+        int width = size. x;
+        int height = size. y;
+        original = UtilsKt.getBitmap(uri, height, width);
         new File(uri.getPath()).deleteOnExit();
         return original;
     }

@@ -6,6 +6,10 @@ import android.net.Uri
 import android.os.Environment
 import java.io.*
 import java.util.*
+import kotlin.math.ceil
+import kotlin.math.ln
+import kotlin.math.max
+import kotlin.math.pow
 
 /**
  * Created by jhansi on 05/04/15.
@@ -37,39 +41,15 @@ fun saveImage(path: String, imageName: String, bitmap: Bitmap): String? {
 /**
  * Get bitmap scaled by biggest desired side
  */
-fun getBitmap(uri: Uri, desiredHeight: Int, desiredWidth: Int): Bitmap {
-    return decodeFile(File(uri.path))!!
-}
+fun getBitmap(uri: Uri, desiredHeight: Int, desiredWidth: Int): Bitmap =
+    decodeFile(File(uri.path), max(desiredHeight, desiredWidth))!!
 
 
-@Throws(IOException::class)
-fun getBitmapScaledByHeight(uri: Uri, desiredHeight: Int): Bitmap {
-    val options = BitmapFactory.Options()
-    options.inJustDecodeBounds = true
-    val bitmap = BitmapFactory.decodeFile(uri.path, options)
-    options.outWidth = (desiredHeight * bitmap.width) / bitmap.height
-    options.outHeight = desiredHeight
-    options.inJustDecodeBounds = false
-    options.inBitmap = bitmap
-    return BitmapFactory.decodeFile(uri.path, options)
-}
-
-@Throws(IOException::class)
-fun getBitmapScaledByWidth(uri: Uri, desiredWidth: Int): Bitmap {
-    val options = BitmapFactory.Options()
-    options.inJustDecodeBounds = true
-    val bitmap = BitmapFactory.decodeFile(uri.path, options)
-    options.outWidth = desiredWidth
-    options.outHeight = (desiredWidth * bitmap.height) / bitmap.width
-    options.inJustDecodeBounds = false
-    options.inBitmap = bitmap
-    return BitmapFactory.decodeFile(uri.path, options)
-}
-
-val IMAGE_MAX_SIZE = 1500
-
-private fun decodeFile(f: File): Bitmap? {
-    var b: Bitmap? = null
+/**
+ * Optimized scaled image, for avoid OutMemoryErrors.
+ */
+private fun decodeFile(f: File, bigSize: Int): Bitmap? {
+    val b: Bitmap?
 
     //Decode image size
     val o = BitmapFactory.Options()
@@ -80,8 +60,8 @@ private fun decodeFile(f: File): Bitmap? {
     fis.close()
 
     var scale = 1
-    if (o.outHeight > IMAGE_MAX_SIZE || o.outWidth > IMAGE_MAX_SIZE) {
-        scale = Math.pow(2.0, Math.ceil(Math.log(IMAGE_MAX_SIZE / Math.max(o.outHeight, o.outWidth).toDouble()) / Math.log(0.5)).toInt().toDouble()).toInt()
+    if (o.outHeight > bigSize || o.outWidth > bigSize) {
+        scale = 2.0.pow(ceil(ln(bigSize / max(o.outHeight, o.outWidth).toDouble()) / ln(0.5)).toInt().toDouble()).toInt()
     }
 
     //Decode with inSampleSize

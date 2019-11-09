@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Rect
 import android.graphics.pdf.PdfDocument
+import android.net.Uri
 import android.os.AsyncTask
 import android.os.Environment
 import android.util.Log
@@ -38,12 +39,7 @@ fun createPdf(
                 val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, imagesPaths.size)
                 val page = pdfDoc.startPage(pageInfo.create())
                 val pageCanvas = page.canvas
-                bitmap = BitmapFactory.decodeFile(imageForWrite, options)
-
-                //compress...
-                val compressed = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, compressed)
-                bitmap = BitmapFactory.decodeStream(ByteArrayInputStream(compressed.toByteArray()))
+                bitmap = getBitmap(Uri.fromFile(File(imageForWrite)), pageHeight, pageWidth)
 
                 //rescaling...
                 var rescaledByWidth = false
