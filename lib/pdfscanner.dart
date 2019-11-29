@@ -302,6 +302,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
                               generatedPDFsPath: widget.generatedPDFsPath,
                               cleanScannedImagesWhenPdfGenerate: widget.cleanScannedImagesWhenPdfGenerate,
                             ).then((result) {
+                              print(result);
                               Future.delayed(Duration(seconds: 2), () => pr.hide());
                               widget.listener?.onPdfGenerated(result);
                             });
@@ -402,6 +403,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
       scannedImageName: widget.scannedImageName,
     )
         .then((final String path) => setState(() => setState(() {
+              print(path);
               _imagesPaths.add(path);
               widget.listener?.onImageScanned(path);
             })))

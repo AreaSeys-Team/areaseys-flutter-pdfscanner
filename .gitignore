@@ -11,3 +11,5 @@ build/
 android/.externalNativeBuild/
 
 android/.cxx/
+
+example/.flutter-plugins-dependencies

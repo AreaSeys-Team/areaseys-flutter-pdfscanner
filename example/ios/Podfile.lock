@@ -1,22 +1,39 @@
 PODS:
   - Flutter (1.0.0)
-  - pdfscanner (0.0.1):
+  - open_file (0.0.1):
     - Flutter
+  - PDFGenerator (3.0.0)
+  - pdfscanner (1.0):
+    - Flutter
+    - PDFGenerator (~> 3.0.0)
+    - WeScan (~> 1.0.0)
+  - WeScan (1.0.0)
 
 DEPENDENCIES:
   - Flutter (from `.symlinks/flutter/ios`)
+  - open_file (from `.symlinks/plugins/open_file/ios`)
   - pdfscanner (from `.symlinks/plugins/pdfscanner/ios`)
+
+SPEC REPOS:
+  trunk:
+    - PDFGenerator
+    - WeScan
 
 EXTERNAL SOURCES:
   Flutter:
     :path: ".symlinks/flutter/ios"
+  open_file:
+    :path: ".symlinks/plugins/open_file/ios"
   pdfscanner:
     :path: ".symlinks/plugins/pdfscanner/ios"
 
 SPEC CHECKSUMS:
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
-  pdfscanner: ba486ade0159e3813a97d76b935e30b92bf6ca6b
+  open_file: 02eb5cb6b21264bd3a696876f5afbfb7ca4f4b7d
+  PDFGenerator: e00fd09ae8021e304b5672cf11bc28234fc626e7
+  pdfscanner: 1ee408e90104c09a88bfb9a6917dc8a5cb156f4c
+  WeScan: a049a4a2a0eb1c4560cf649ebd933d07b0d9ef4c
 
 PODFILE CHECKSUM: 10ae9c18d12c9ffc2275c9a159a3b1e281990db0
 
-COCOAPODS: 1.6.1
+COCOAPODS: 1.8.4

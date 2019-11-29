@@ -3,19 +3,21 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'pdfscanner'
-  s.version          = '0.0.1'
-  s.summary          = 'A new flutter plugin project.'
+  s.version          = '1.0'
+  s.summary          = 'PDF scanner plugin for iOS'
   s.description      = <<-DESC
-A new flutter plugin project.
+Plugin para el escandeado de imagenes a PDF.
                        DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'http://areaseys.com'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'AREASeys S.L' => 'shoyos@areaseys.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
+  s.dependency 'WeScan', '~> 1.0.0'
+  s.dependency 'PDFGenerator', '~> 3.0.0'
 
-  s.ios.deployment_target = '8.0'
+  s.ios.deployment_target = '12.0'
 end
 
