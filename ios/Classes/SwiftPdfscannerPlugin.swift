@@ -1,7 +1,33 @@
 import Flutter
 import UIKit
+import WeScan
 
-public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin {
+public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin, ImageScannerControllerDelegate {
+    
+    var pendingResult : FlutterResult?
+    
+    public func imageScannerController(_ scanner: ImageScannerController, didFinishScanningWithResults results: ImageScannerResults) {
+        print("Saving scanned image...")
+        var path : String?
+        if results.doesUserPreferEnhancedImage {
+            path = savePicture(picture: results.enhancedImage ?? results.scannedImage, imageName: "scanned_\(Date().millisecondsSince1970).jpg")
+        } else {
+            path = savePicture(picture: results.scannedImage, imageName: "scanned_\(Date().millisecondsSince1970).jpg")
+        }
+        
+        if pendingResult != nil {
+            pendingResult!(path)
+        }
+        scanner.dismiss(animated: true, completion: nil)
+    }
+    
+    public func imageScannerControllerDidCancel(_ scanner: ImageScannerController) {
+        print("entra aqui")
+    }
+    
+    public func imageScannerController(_ scanner: ImageScannerController, didFailWithError error: Error) {
+        scanner.dismiss(animated: false, completion: nil)
+    }
     
     static var registrated: FlutterPluginRegistrar? = nil
     
@@ -17,19 +43,14 @@ public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin {
         switch call.method {
         case "scan":
             let argumentsMap = call.arguments! as! [String:Any?]
-            let scanSource = argumentsMap["scanSource"] as! Int
-            let scannedImagesPath = argumentsMap["scannedImagesPath"] as! String
-            let scannedImageName = argumentsMap["scannedImageName"] as! String
-            
-            let controller = ViewController()
-            
-            let rootViewController:UIViewController! = UIApplication.shared.keyWindow?.rootViewController
-            if (rootViewController is UINavigationController) {
-                (rootViewController as! UINavigationController).pushViewController(controller,animated:true)
-            } else {
-                let navigationController:UINavigationController! = UINavigationController(rootViewController: controller)
-              rootViewController.present(navigationController, animated:true, completion:nil)
-            }
+            //let scanSource = argumentsMap["scanSource"] as! Int
+            //let scannedImagesPath = argumentsMap["scannedImagesPath"] as! String
+            //let scannedImageName = argumentsMap["scannedImageName"] as! String
+            pendingResult = result
+            let rootViewController: FlutterViewController! = UIApplication.shared.keyWindow?.rootViewController as! FlutterViewController
+            let scannerViewController = ImageScannerController()
+            scannerViewController.imageScannerDelegate = self
+            rootViewController.present(scannerViewController, animated: true)
             
             break
         case "generatePdf":
@@ -59,3 +80,21 @@ public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin {
     }
     
 }
+
+extension Date {
+    var millisecondsSince1970:Int64 {
+        return Int64((self.timeIntervalSince1970 * 1000.0).rounded())
+    }
+
+    init(milliseconds:Int64) {
+        self = Date(timeIntervalSince1970: TimeInterval(milliseconds) / 1000)
+    }
+}
+
+func savePicture(picture: UIImage, imageName: String) -> String {
+    let imagePath = (NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as NSString).appendingPathComponent(imageName)
+    let data = UIImageJPEGRepresentation(picture, 0.9)
+    FileManager.default.createFile(atPath: imagePath, contents: data, attributes: nil)
+    return imagePath
+}
+
