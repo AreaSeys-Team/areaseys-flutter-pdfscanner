@@ -3,7 +3,7 @@ import UIKit
 import WeScan
 import PDFKit
 
-public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin, ImageScannerControllerDelegate {
+public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin, ImageScannerControllerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     var pendingResult : FlutterResult?
     
@@ -44,14 +44,24 @@ public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin, ImageScannerControl
         switch call.method {
         case "scan":
             let argumentsMap = call.arguments! as! [String:Any?]
-            //let scanSource = argumentsMap["scanSource"] as! Int
+            let scanSource = argumentsMap["scanSource"] as! Int
             //let scannedImagesPath = argumentsMap["scannedImagesPath"] as! String
             //let scannedImageName = argumentsMap["scannedImageName"] as! String
             pendingResult = result
             let rootViewController: FlutterViewController! = UIApplication.shared.keyWindow?.rootViewController as! FlutterViewController
-            let scannerViewController = ImageScannerController()
-            scannerViewController.imageScannerDelegate = self
-            rootViewController.present(scannerViewController, animated: true)
+            if (scanSource == 4) {
+                let scannerViewController = ImageScannerController()
+                scannerViewController.imageScannerDelegate = self
+                scannerViewController.provideImageData(<#T##data: UnsafeMutableRawPointer##UnsafeMutableRawPointer#>, bytesPerRow: <#T##Int#>, origin: <#T##Int#>, <#T##y: Int##Int#>, size: <#T##Int#>, <#T##height: Int##Int#>, userInfo: <#T##Any?#>)
+                rootViewController.present(scannerViewController, animated: true)
+            } else {
+                let pickerController = UIImagePickerController()
+                pickerController.delegate = self
+                pickerController.allowsEditing = true
+                pickerController.mediaTypes = ["public.image", "public.movie"]
+                pickerController.sourceType = .photoLibrary
+                rootViewController.present(pickerController, animated: true, completion: nil)
+            }
             
             break
         case "generatePdf":
