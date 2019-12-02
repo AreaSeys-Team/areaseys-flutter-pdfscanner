@@ -1,6 +1,7 @@
 import Flutter
 import UIKit
 import WeScan
+import PDFKit
 
 public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin, ImageScannerControllerDelegate {
     
@@ -56,8 +57,8 @@ public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin, ImageScannerControl
         case "generatePdf":
             let argumentsMap = call.arguments! as! [String:Any?]
             var imagesPaths : [String]? = nil
-            if (argumentsMap["scanSource"] != nil) {
-                imagesPaths = argumentsMap["scanSource"] as! [String]
+            if (argumentsMap["imagesPaths"] != nil) {
+                imagesPaths = argumentsMap["imagesPaths"] as! [String]
             }
             let pdfName = argumentsMap["pdfName"] as! String
             let generatedPDFsPath = argumentsMap["generatedPDFsPath"] as! String
@@ -69,8 +70,35 @@ public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin, ImageScannerControl
             let pageWidth = argumentsMap["pageWidth"] as! Int
             let pageHeight = argumentsMap["pageHeight"] as! Int
             
-            
-            
+            let pdfMetaData = [
+              kCGPDFContextCreator: "AREASeys S.L",
+              kCGPDFContextAuthor: "raywenderlich.com"
+            ]
+            let pageRect = CGRect(x: 0, y: 0, width: pageWidth, height: pageHeight)
+            let format = UIGraphicsPDFRendererFormat()
+            format.documentInfo = pdfMetaData as [String: Any]
+            let renderer = UIGraphicsPDFRenderer(bounds: pageRect, format: format)
+            let data = renderer.pdfData { (context) in
+                do {
+                    for imagePath in imagesPaths! {
+                        print("generating pdf page for image: \(imagePath)")
+                        context.beginPage()
+                        let image = UIImage(contentsOfFile: imagePath)
+                        image?.drawAsPattern(in: CGRect(
+                            x: marginLeft,
+                            y: marginTop,
+                            width: Int(image?.size.width ?? 0),
+                            height: Int(image?.size.height ?? 0))
+                        )
+                    }
+                } catch {
+                    print("error generating PDF page for imagePath... ")
+                }
+            }
+            let document = PDFDocument(data: data)
+            let pdfPath = (NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as NSString).appendingPathComponent(pdfName)
+            document?.write(toFile: pdfPath)
+            result(pdfPath)
             break
         default:
             result(FlutterError(code: "error", message: "Not Implemented!", details: nil))
