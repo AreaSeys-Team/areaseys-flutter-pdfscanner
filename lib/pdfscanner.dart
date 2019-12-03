@@ -302,6 +302,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
                               generatedPDFsPath: widget.generatedPDFsPath,
                               cleanScannedImagesWhenPdfGenerate: widget.cleanScannedImagesWhenPdfGenerate,
                             ).then((result) {
+                              print(result);
                               Future.delayed(Duration(seconds: 2), () => pr.hide());
                               widget.listener?.onPdfGenerated(result);
                             });
@@ -326,7 +327,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
               ),
             )
           : null,
-      floatingActionButton: SpeedDial(
+      floatingActionButton: Platform.isAndroid ? SpeedDial(
         marginRight: 18,
         marginBottom: 20,
         child: !_dialVisible ? Icon(Icons.add) : Icon(Icons.close),
@@ -357,6 +358,10 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
               labelStyle: TextStyle(fontSize: 18.0),
               onTap: () => _launchScannerPlugin(ImageSource.CAMERA)),
         ],
+      ) : FloatingActionButton(
+        onPressed: () => _launchScannerPlugin(ImageSource.CAMERA),
+        child: Icon(Icons.camera_alt, color: Colors.white),
+        backgroundColor: widget.primaryScreenColor,
       ),
       appBar: AppBar(
         title: Text(widget.screenTitle),
@@ -402,6 +407,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
       scannedImageName: widget.scannedImageName,
     )
         .then((final String path) => setState(() => setState(() {
+              print(path);
               _imagesPaths.add(path);
               widget.listener?.onImageScanned(path);
             })))
