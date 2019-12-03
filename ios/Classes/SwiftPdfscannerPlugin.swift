@@ -118,7 +118,7 @@ extension Date {
  */
 func savePicture(picture: UIImage, imageName: String) -> String {
     let imagePath = (NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as NSString).appendingPathComponent(imageName)
-    let data = UIImageJPEGRepresentation(picture, 0.9)
+    let data = UIImagePNGRepresentation(picture)
     FileManager.default.createFile(atPath: imagePath, contents: data, attributes: nil)
     return imagePath
 }
