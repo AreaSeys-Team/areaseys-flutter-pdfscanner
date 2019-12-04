@@ -1,9 +1,9 @@
 import Flutter
 import UIKit
-import WeScan
 import PDFKit
+import WeScan
 
-public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin, ImageScannerControllerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin, ImageScannerControllerDelegate {
     
     var pendingResult : FlutterResult?
     
@@ -47,6 +47,7 @@ public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin, ImageScannerControl
             let scanSource = argumentsMap["scanSource"] as! Int
             //let scannedImagesPath = argumentsMap["scannedImagesPath"] as! String
             //let scannedImageName = argumentsMap["scannedImageName"] as! String
+            
             pendingResult = result
             let rootViewController: FlutterViewController! = UIApplication.shared.keyWindow?.rootViewController as? FlutterViewController
             if (scanSource == 4) {
@@ -54,12 +55,15 @@ public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin, ImageScannerControl
                 scannerViewController.imageScannerDelegate = self
                 rootViewController.present(scannerViewController, animated: true)
             } else {
-                let pickerController = UIImagePickerController()
-                pickerController.delegate = self
-                pickerController.allowsEditing = true
-                pickerController.mediaTypes = ["public.image", "public.movie"]
-                pickerController.sourceType = .photoLibrary
-                rootViewController.present(pickerController, animated: true, completion: nil)
+                let imageForProcess = argumentsMap["imageForProcess"] as? String
+                print("Scanning with image from gallery! image received: \(String(describing: imageForProcess))")
+                if (imageForProcess != nil) {
+                    let image = UIImage(contentsOfFile: imageForProcess!)
+                    let scannerViewController = ImageScannerController(image: image!.rotate(radians: 0), delegate: self)
+                    scannerViewController.imageScannerDelegate = self
+                    let rootViewController: FlutterViewController! = UIApplication.shared.keyWindow?.rootViewController as? FlutterViewController
+                    rootViewController.present(scannerViewController, animated: true)
+                }
             }
             
             break
@@ -180,11 +184,9 @@ func generatePdf(
             }
             
             let leftOffset = marginLeft + plusForHorizontalCenter
-            let rightOffset = leftOffset + finalWidth
             let topOffset = marginTop
-            let bottomOffset = finalHeight
             
-            resizeImage(image: image!, targetSize: CGSize(width: finalWidth, height: finalHeight)).draw(in: CGRect(
+            image!.resize(targetSize: CGSize(width: finalWidth, height: finalHeight)).draw(in: CGRect(
                 x: leftOffset,
                 y: topOffset,
                 width: finalWidth,
@@ -198,28 +200,53 @@ func generatePdf(
     return pdfPath
 }
 
- func resizeImage(image: UIImage, targetSize: CGSize) -> UIImage {
-    let size = image.size
-
-    let widthRatio  = targetSize.width  / size.width
-    let heightRatio = targetSize.height / size.height
-
-    // Figure out what our orientation is, and use that to form the rectangle
-    var newSize: CGSize
-    if(widthRatio > heightRatio) {
-        newSize = CGSize(width: size.width * heightRatio, height: size.height * heightRatio)
-    } else {
-        newSize = CGSize(width: size.width * widthRatio,  height: size.height * widthRatio)
+extension UIImage {
+    
+    func rotate(radians: Float) -> UIImage? {
+        var newSize = CGRect(origin: CGPoint.zero, size: self.size).applying(CGAffineTransform(rotationAngle: CGFloat(radians))).size
+        // Trim off the extremely small float value to prevent core graphics from rounding it up
+        newSize.width = floor(newSize.width)
+        newSize.height = floor(newSize.height)
+        
+        UIGraphicsBeginImageContextWithOptions(newSize, false, self.scale)
+        let context = UIGraphicsGetCurrentContext()!
+        
+        // Move origin to middle
+        context.translateBy(x: newSize.width/2, y: newSize.height/2)
+        // Rotate around middle
+        context.rotate(by: CGFloat(radians))
+        // Draw the image at its center
+        self.draw(in: CGRect(x: -self.size.width/2, y: -self.size.height/2, width: self.size.width, height: self.size.height))
+        
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return newImage
     }
+    
+     func resize(targetSize: CGSize) -> UIImage {
+        let size = self.size
 
-    // This is the rect that we've calculated out and this is what is actually used below
-    let rect = CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height)
+        let widthRatio  = targetSize.width  / size.width
+        let heightRatio = targetSize.height / size.height
 
-    // Actually do the resizing to the rect using the ImageContext stuff
-    UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
-    image.draw(in: rect)
-    let newImage = UIGraphicsGetImageFromCurrentImageContext()
-    UIGraphicsEndImageContext()
+        // Figure out what our orientation is, and use that to form the rectangle
+        var newSize: CGSize
+        if(widthRatio > heightRatio) {
+            newSize = CGSize(width: size.width * heightRatio, height: size.height * heightRatio)
+        } else {
+            newSize = CGSize(width: size.width * widthRatio,  height: size.height * widthRatio)
+        }
 
-    return newImage!
+        // This is the rect that we've calculated out and this is what is actually used below
+        let rect = CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height)
+
+        // Actually do the resizing to the rect using the ImageContext stuff
+        UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+        self.draw(in: rect)
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+
+        return newImage!
+    }
 }
