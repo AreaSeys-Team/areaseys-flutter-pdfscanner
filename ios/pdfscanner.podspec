@@ -12,12 +12,11 @@ Plugin para el escandeado de imagenes a PDF.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'AREASeys S.L' => 'shoyos@areaseys.com' }
   s.source           = { :path => '.' }
+  s.source           = { :git => 'https://github.com/WeTransfer/WeScan.git', :branch => 'master' }
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
-  s.dependency 'WeScan', '~> 1.0.0'
-  s.dependency 'PDFGenerator', '~> 3.0.0'
-
+  s.dependency 'WeScan'
   s.ios.deployment_target = '12.0'
 end
 

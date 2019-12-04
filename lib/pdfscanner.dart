@@ -9,6 +9,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pdfscanner/SeysFlicker.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:reorderables/reorderables.dart';
+import 'package:image_picker/image_picker.dart' as ImagePicker;
 
 /// SEE THIS LINK FOR ADD MORE PAGE SIZES
 ///
@@ -79,12 +80,14 @@ class ImagePdfScanner {
     final ImageSource scanSource,
     final String scannedImagesPath,
     final String scannedImageName,
+    final String selectedImage,
   }) async {
     try {
       final String response = await _channel.invokeMethod('scan', {
         "scanSource": scanSource != null ? _imageSourceToValue[scanSource] : _imageSourceToValue[ImageSource.CAMERA],
         "scannedImagesPath": scannedImagesPath ?? "/ImageScannerPlugin/scanned_images",
-        "scannedImageName": scannedImageName ?? "scanned_${DateTime.now().millisecondsSinceEpoch.toString()}"
+        "scannedImageName": scannedImageName ?? "scanned_${DateTime.now().millisecondsSinceEpoch.toString()}",
+        "imageForProcess": selectedImage
       });
       return Future.value(response);
     } catch (ex) {
@@ -239,6 +242,13 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
     super.initState();
   }
 
+  Future getImage() async {
+    var image = await ImagePicker.ImagePicker.pickImage(source: ImagePicker.ImageSource.gallery);
+    if (image != null) {
+      _launchScannerPlugin(ImageSource.FILES, selectedImage: image.path);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     debugPrint("List of scanned lenght -> ${_imagesPaths.length}");
@@ -327,7 +337,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
               ),
             )
           : null,
-      floatingActionButton: Platform.isAndroid ? SpeedDial(
+      floatingActionButton: SpeedDial(
         marginRight: 18,
         marginBottom: 20,
         child: !_dialVisible ? Icon(Icons.add) : Icon(Icons.close),
@@ -350,7 +360,7 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
             ),
             backgroundColor: Colors.grey[200],
             labelStyle: TextStyle(fontSize: 18.0),
-            onTap: () => _launchScannerPlugin(ImageSource.FILES),
+            onTap: () => Platform.isAndroid ? _launchScannerPlugin(ImageSource.FILES) : getImage(),
           ),
           SpeedDialChild(
               child: Icon(Icons.camera_alt, color: widget.primaryScreenColor),
@@ -358,10 +368,6 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
               labelStyle: TextStyle(fontSize: 18.0),
               onTap: () => _launchScannerPlugin(ImageSource.CAMERA)),
         ],
-      ) : FloatingActionButton(
-        onPressed: () => _launchScannerPlugin(ImageSource.CAMERA),
-        child: Icon(Icons.camera_alt, color: Colors.white),
-        backgroundColor: widget.primaryScreenColor,
       ),
       appBar: AppBar(
         title: Text(widget.screenTitle),
@@ -400,11 +406,12 @@ class _PdfScannerScreen extends State<PdfScannerScreen> {
     );
   }
 
-  void _launchScannerPlugin(final ImageSource source) async {
+  void _launchScannerPlugin(final ImageSource source, {final String selectedImage}) async {
     ImagePdfScanner.scan(
       scanSource: source,
       scannedImagesPath: widget.scannedImagesPath,
       scannedImageName: widget.scannedImageName,
+      selectedImage: selectedImage ?? ""
     )
         .then((final String path) => setState(() => setState(() {
               print(path);
