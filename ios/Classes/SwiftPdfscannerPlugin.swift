@@ -7,29 +7,6 @@ public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin, ImageScannerControl
     
     var pendingResult : FlutterResult?
     
-    public func imageScannerController(_ scanner: ImageScannerController, didFinishScanningWithResults results: ImageScannerResults) {
-        print("Saving scanned image...")
-        var path : String?
-        if results.doesUserPreferEnhancedImage {
-            path = savePicture(picture: results.enhancedImage ?? results.scannedImage, imageName: "scanned_\(Date().millisecondsSince1970).jpg")
-        } else {
-            path = savePicture(picture: results.scannedImage, imageName: "scanned_\(Date().millisecondsSince1970).jpg")
-        }
-        
-        if pendingResult != nil {
-            pendingResult!(path)
-        }
-        scanner.dismiss(animated: true, completion: nil)
-    }
-    
-    public func imageScannerControllerDidCancel(_ scanner: ImageScannerController) {
-        print("entra aqui")
-    }
-    
-    public func imageScannerController(_ scanner: ImageScannerController, didFailWithError error: Error) {
-        scanner.dismiss(animated: false, completion: nil)
-    }
-    
     static var registrated: FlutterPluginRegistrar? = nil
     
     public static func register(with registrar: FlutterPluginRegistrar) {
@@ -40,7 +17,6 @@ public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin, ImageScannerControl
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        
         switch call.method {
         case "scan":
             let argumentsMap = call.arguments! as! [String:Any?]
@@ -49,6 +25,7 @@ public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin, ImageScannerControl
             //let scannedImageName = argumentsMap["scannedImageName"] as! String
             
             pendingResult = result
+            
             let rootViewController: FlutterViewController! = UIApplication.shared.keyWindow?.rootViewController as? FlutterViewController
             if (scanSource == 4) {
                 let scannerViewController = ImageScannerController()
@@ -99,33 +76,32 @@ public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin, ImageScannerControl
             result(FlutterError(code: "error", message: "Not Implemented!", details: nil))
             break
         }
-        
     }
     
-}
-
-/**
- Date extension for allow get milliseconds since 1970 of any Date object.
- */
-extension Date {
-    var millisecondsSince1970:Int64 {
-        return Int64((self.timeIntervalSince1970 * 1000.0).rounded())
+    public func imageScannerController(_ scanner: ImageScannerController, didFinishScanningWithResults results: ImageScannerResults) {
+        print("Saving scanned image...")
+        var path : String?
+        if results.doesUserPreferEnhancedImage {
+            path = (results.enhancedImage ?? results.scannedImage).savePicture(imageName: "scanned_\(Date().millisecondsSince1970).jpg")
+        } else {
+            path = results.scannedImage.savePicture(imageName: "scanned_\(Date().millisecondsSince1970).jpg")
+        }
+        
+        if pendingResult != nil {
+            pendingResult!(path)
+        }
+        scanner.dismiss(animated: true, completion: nil)
     }
-
-    init(milliseconds:Int64) {
-        self = Date(timeIntervalSince1970: TimeInterval(milliseconds) / 1000)
+    
+    public func imageScannerControllerDidCancel(_ scanner: ImageScannerController) {
+        scanner.dismiss(animated: true, completion: nil)
+    }
+    
+    public func imageScannerController(_ scanner: ImageScannerController, didFailWithError error: Error) {
+        scanner.dismiss(animated: false, completion: nil)
     }
 }
 
-/**
- Saves one UIImage with specified name and returns the path of saved image.
- */
-func savePicture(picture: UIImage, imageName: String) -> String {
-    let imagePath = (NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as NSString).appendingPathComponent(imageName)
-    let data = UIImagePNGRepresentation(picture)
-    FileManager.default.createFile(atPath: imagePath, contents: data, attributes: nil)
-    return imagePath
-}
 
 /**
  Generates PDF documents with image paths
@@ -154,7 +130,7 @@ func generatePdf(
             context.beginPage(withBounds: pageRect, pageInfo: [:])
             let image = UIImage(contentsOfFile: imagePath)
             
-            //rescaling... <-- (Copy-paste from Android Kotlin source)
+            //rescaling... <-- (Copy-paste from Android Kotlin source mantain updated this code in both platforms)
             var rescaledByWidth = false
             let originalHeight = Int(image?.size.height ?? 0)
             let originalWidth = Int(image?.size.width ?? 0)
@@ -204,49 +180,44 @@ extension UIImage {
     
     func rotate(radians: Float) -> UIImage? {
         var newSize = CGRect(origin: CGPoint.zero, size: self.size).applying(CGAffineTransform(rotationAngle: CGFloat(radians))).size
-        // Trim off the extremely small float value to prevent core graphics from rounding it up
         newSize.width = floor(newSize.width)
         newSize.height = floor(newSize.height)
-        
         UIGraphicsBeginImageContextWithOptions(newSize, false, self.scale)
         let context = UIGraphicsGetCurrentContext()!
-        
-        // Move origin to middle
         context.translateBy(x: newSize.width/2, y: newSize.height/2)
-        // Rotate around middle
         context.rotate(by: CGFloat(radians))
-        // Draw the image at its center
         self.draw(in: CGRect(x: -self.size.width/2, y: -self.size.height/2, width: self.size.width, height: self.size.height))
-        
         let newImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-        
         return newImage
     }
     
-     func resize(targetSize: CGSize) -> UIImage {
-        let size = self.size
-
-        let widthRatio  = targetSize.width  / size.width
-        let heightRatio = targetSize.height / size.height
-
-        // Figure out what our orientation is, and use that to form the rectangle
-        var newSize: CGSize
-        if(widthRatio > heightRatio) {
-            newSize = CGSize(width: size.width * heightRatio, height: size.height * heightRatio)
-        } else {
-            newSize = CGSize(width: size.width * widthRatio,  height: size.height * widthRatio)
-        }
-
-        // This is the rect that we've calculated out and this is what is actually used below
-        let rect = CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height)
-
-        // Actually do the resizing to the rect using the ImageContext stuff
-        UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+    func resize(targetSize: CGSize) -> UIImage {
+        let rect = CGRect(x: 0, y: 0, width: targetSize.width, height: targetSize.height)
+        UIGraphicsBeginImageContextWithOptions(targetSize, false, 1.0)
         self.draw(in: rect)
         let newImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-
         return newImage!
+    }
+    
+    func savePicture(imageName: String) -> String {
+        let imagePath = (NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as NSString).appendingPathComponent(imageName)
+        let data = UIImagePNGRepresentation(self)
+        FileManager.default.createFile(atPath: imagePath, contents: data, attributes: nil)
+        return imagePath
+    }
+}
+
+/**
+ Date extension for allow get milliseconds since 1970 of any Date object.
+ */
+extension Date {
+    var millisecondsSince1970:Int64 {
+        return Int64((self.timeIntervalSince1970 * 1000.0).rounded())
+    }
+
+    init(milliseconds:Int64) {
+        self = Date(timeIntervalSince1970: TimeInterval(milliseconds) / 1000)
     }
 }
