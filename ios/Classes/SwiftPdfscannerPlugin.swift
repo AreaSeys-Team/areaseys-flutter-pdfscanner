@@ -38,7 +38,6 @@ public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin, ImageScannerControl
                     let image = UIImage(contentsOfFile: imageForProcess!)
                     let scannerViewController = ImageScannerController(image: image!.rotate(radians: 0), delegate: self)
                     scannerViewController.imageScannerDelegate = self
-                    let rootViewController: FlutterViewController! = UIApplication.shared.keyWindow?.rootViewController as? FlutterViewController
                     rootViewController.present(scannerViewController, animated: true)
                 }
             }
