@@ -16,6 +16,6 @@ Plugin para el escandeado de imagenes a PDF.
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
   s.dependency 'WeScan'
-  s.ios.deployment_target = '11.0'
+  s.ios.deployment_target = '12.0'
 end
 
