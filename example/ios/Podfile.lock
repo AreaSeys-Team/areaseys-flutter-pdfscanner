@@ -14,10 +14,7 @@ DEPENDENCIES:
   - image_picker (from `.symlinks/plugins/image_picker/ios`)
   - open_file (from `.symlinks/plugins/open_file/ios`)
   - pdfscanner (from `.symlinks/plugins/pdfscanner/ios`)
-
-SPEC REPOS:
-  trunk:
-    - WeScan
+  - WeScan (from `https://github.com/WeTransfer/WeScan.git`, tag `1.2.0`)
 
 EXTERNAL SOURCES:
   Flutter:
@@ -28,14 +25,22 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/open_file/ios"
   pdfscanner:
     :path: ".symlinks/plugins/pdfscanner/ios"
+  WeScan:
+    :git: https://github.com/WeTransfer/WeScan.git
+    :tag: 1.2.0
+
+CHECKOUT OPTIONS:
+  WeScan:
+    :git: https://github.com/WeTransfer/WeScan.git
+    :tag: 1.2.0
 
 SPEC CHECKSUMS:
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   image_picker: e3eacd46b94694dde7cf2705955cece853aa1a8f
   open_file: 02eb5cb6b21264bd3a696876f5afbfb7ca4f4b7d
-  pdfscanner: ec6459a90de69e3f8b5f77d3e8e3e6114a567f98
-  WeScan: 7ebe08c966fbd7321be2be1a962423c237e3e2ec
+  pdfscanner: 48f32844f0b1235db16b921ac224083d122d89f7
+  WeScan: f1b82b36fd84eec6a98ad5e8fa0ac4f354b70a07
 
-PODFILE CHECKSUM: 10ae9c18d12c9ffc2275c9a159a3b1e281990db0
+PODFILE CHECKSUM: 6f16c0e6bded2b893714c07ad76dd809f532163e
 
 COCOAPODS: 1.8.4

@@ -80,10 +80,10 @@ public class SwiftPdfscannerPlugin: NSObject, FlutterPlugin, ImageScannerControl
     public func imageScannerController(_ scanner: ImageScannerController, didFinishScanningWithResults results: ImageScannerResults) {
         print("Saving scanned image...")
         var path : String?
-        if results.doesUserPreferEnhancedImage {
-            path = (results.enhancedImage ?? results.scannedImage).savePicture(imageName: "scanned_\(Date().millisecondsSince1970).jpg")
+        if results.doesUserPreferEnhancedScan {
+            path = (results.enhancedScan?.image ?? results.croppedScan.image).savePicture(imageName: "scanned_\(Date().millisecondsSince1970).jpg")
         } else {
-            path = results.scannedImage.savePicture(imageName: "scanned_\(Date().millisecondsSince1970).jpg")
+            path = results.croppedScan.image.savePicture(imageName: "scanned_\(Date().millisecondsSince1970).jpg")
         }
         
         if pendingResult != nil {
