@@ -8,15 +8,14 @@ Pod::Spec.new do |s|
   s.description      = <<-DESC
 Plugin para el escandeado de imagenes a PDF.
                        DESC
-  s.homepage         = 'http://areaseys.com'
-  s.license          = { :file => '../LICENSE' }
-  s.author           = { 'AREASeys S.L' => 'shoyos@areaseys.com' }
-  s.source           = { :path => '.' }
-  s.source           = { :git => 'https://github.com/WeTransfer/WeScan.git', :branch => 'master' }
-  s.source_files = 'Classes/**/*'
+  s.homepage            = 'http://areaseys.com'
+  s.license             = { :file => '../LICENSE' }
+  s.author              = { 'AREASeys S.L' => 'shoyos@areaseys.com' }
+  s.source              = { :path => '.' }
+  s.source_files        = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
   s.dependency 'WeScan'
-  s.ios.deployment_target = '12.0'
+  s.ios.deployment_target = '11.0'
 end
 
